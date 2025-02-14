@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Options</title>
+    <link rel="stylesheet" href="css/options.css">
+</head>
+<body>
+    <div class="container">
+        <h1>扩展设置</h1>
+        <div class="option-group">
+            <label for="themeSelect">主题:</label>
+            <select id="themeSelect">
+                <option value="light">浅色</option>
+                <option value="dark">深色</option>
+            </select>
+        </div>
+        <div class="option-group language-setting">
+            <label for="languageSelect">
+                <span class="globe-icon">🌐</span>
+                语言:
+            </label>
+            <select id="languageSelect">
+                <option value="zh">中文</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="es">Español</option>
+            </select>
+        </div>
+        <div class="option-group">
+            <label for="maxRecent">最大记录数:</label>
+            <div class="slider-container">
+                <div class="slider-with-input">
+                    <input type="range" id="maxRecentSlider" min="0" max="20" step="1" value="5" class="slider" title="滑动调整">
+                    <div class="slider-tooltip" id="maxRecentTooltip"></div>
+                    <input type="number" id="maxRecent" class="number-input" placeholder="输入数值">
+                </div>
+                <p class="help-text">设置最近关闭标签页的最大记录数量 (1-20000)</p>
+            </div>
+        </div>
+        <div class="option-group">
+            <label for="popupWidth">弹窗宽度:</label>
+            <div class="slider-container">
+                <div class="slider-with-input">
+                    <input type="range" id="popupWidthSlider" min="0" max="16" step="1" value="10" class="slider" title="滑动调整">
+                    <div class="slider-tooltip" id="popupWidthTooltip"></div>
+                    <input type="number" id="popupWidth" class="number-input" placeholder="输入数值">
+                </div>
+                <p class="help-text">设置弹出窗口的宽度 (300-800像素)</p>
+            </div>
+        </div>
+    </div>
+    <script src="js/options.js"></script>
+</body>
+</html>
