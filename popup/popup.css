@@ -1,0 +1,455 @@
+:root {
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --border-color: #e0e0e0;
+    --hover-bg: #f5f5f5;
+    --active-bg: #e0e0e0;
+}
+
+[data-theme='dark'] {
+    --background-color: #1a1a1a;
+    --text-color: #ffffff;
+    --border-color: #404040;
+    --hover-bg: #2d2d2d;
+    --active-bg: #404040;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        --background-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #404040;
+        --hover-bg: #2d2d2d;
+        --active-bg: #404040;
+    }
+}
+
+.container {
+    width: var(--popup-width, 500px);
+    min-width: 300px;
+    max-width: 800px;
+    padding: 12px;
+    background: var(--background-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.search-container {
+    margin-bottom: 12px;
+}
+
+#globalSearch {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* Tab styles */
+.tab-container {
+    display: flex;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #dee2e6;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1px;
+}
+
+.tab-buttons {
+    display: flex;
+}
+
+.tab-button {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tab-button .count {
+    font-size: 12px;
+    color: #666;
+    opacity: 0.8;
+}
+
+.tab-button.active .count {
+    color: #007bff;
+}
+
+.tab-button:hover {
+    color: #333;
+}
+
+.tab-button.active {
+    color: #007bff;
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #007bff;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+#searchInput,
+#closedTabsSearch,
+#globalSearch {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+#searchInput::placeholder,
+#closedTabsSearch::placeholder,
+#globalSearch::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+.navigation-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+    padding-right: 8px;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--text-color);
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.icon-button:hover {
+    color: var(--text-color);
+    background-color: var(--hover-bg);
+    opacity: 1;
+}
+
+.icon-button:disabled {
+    color: var(--text-color);
+    opacity: 0.3;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
+.icon-button .material-icons {
+    font-size: 18px;
+}
+
+#deleteSelected {
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+#deleteSelected:disabled {
+    color: #ccc;
+}
+
+#deleteSelected:hover:not(:disabled) {
+    background-color: #ffebee;
+}
+
+.history-list {
+    height: 400px; /* 增加列表高度 */
+    overflow-y: auto;
+    border: none;
+    border-radius: 4px;
+    margin-bottom: 0;
+    -webkit-overflow-scrolling: touch; /* Improve touch scrolling on macOS */
+    overscroll-behavior: contain; /* Prevent scroll chaining */
+    scroll-behavior: smooth;
+    will-change: transform;
+    transform: translateZ(0);
+    padding: 4px 0;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: var(--background-color);
+    border-radius: 4px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+    background: var(--active-bg);
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    min-height: 24px;
+    position: relative;
+    transition: background-color 0.2s;
+    gap: 8px;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+}
+
+.history-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.history-item:active {
+    background-color: var(--active-bg);
+}
+
+.favicon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.link-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px; /* 增加标题和时间之间的间距 */
+    min-width: 0;
+    overflow: hidden; /* 确保容器不会溢出 */
+    touch-action: pan-y pinch-zoom; /* 添加触摸操作支持 */
+}
+
+.history-link {
+    cursor: pointer;
+    color: var(--text-color); /* 添加文本颜色变量 */
+    max-width: calc(100% - 140px); /* 固定预留时间戳区域的空间 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-item a {
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 140px);  /* 固定预留时间戳区域的空间 */
+    text-decoration: none;
+    color: var(--text-color); /* 更新文本颜色为变量 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13.5px;
+    line-height: 1.4;
+    user-select: none; /* 防止文本选择影响滚动 */
+    -webkit-user-select: none;
+    touch-action: pan-y; /* 允许垂直滚动 */
+    cursor: pointer; /* 改为手型光标 */
+}
+
+.visit-time {
+    font-size: 12px;
+    color: var(--text-color);
+    opacity: 0.7;
+    white-space: nowrap;
+    width: 100px;
+    text-align: right;
+    flex-shrink: 0;
+    margin-right: 16px;
+    font-family: monospace;
+}
+
+.delete-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px; /* Default width to show the × symbol */
+    background: #dc3545;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: width 0.2s;
+    z-index: 1;
+    padding: 0 8px; /* Add padding for better touch targets */
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.history-item:hover .delete-button {
+    opacity: 1;
+}
+
+.delete-button:hover {
+    background: #c82333;
+}
+
+/* Add restore button styles */
+/* 移除 restore-button 相关样式 */
+
+.highlight {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+.pagination button {
+    padding: 4px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.pagination button:disabled {
+    background-color: var(--active-bg) !important;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+#pageInfo, 
+#globalPageInfo {
+    color: var(--text-color);
+    opacity: 0.8;
+    font-size: 13px;
+    min-width: 32px;
+    text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+
+    .container {
+        background-color: #1e1e1e;
+    }
+
+    .tab-button {
+        color: #e0e0e0;
+    }
+
+    .tab-button.active {
+        color: #bb86fc;
+    }
+
+    .tab-button.active::after {
+        background-color: #bb86fc;
+    }
+
+    .tab-button .count {
+        color: #e0e0e0;
+    }
+
+    .tab-button.active .count {
+        color: #bb86fc;
+    }
+
+    .icon-button {
+        color: #e0e0e0;
+    }
+
+    .icon-button:hover {
+        color: #ffffff;
+        background-color: #333333;
+    }
+
+    .icon-button:disabled {
+        color: #555555;
+    }
+
+    .history-item {
+        background-color: var(--background-color);
+    }
+
+    .history-item:hover {
+        background-color: var(--hover-bg);
+    }
+
+    .favicon {
+        filter: brightness(0.8);
+    }
+
+    .visit-time {
+        color: #bbbbbb;
+    }
+
+    .delete-button {
+        background-color: #cf6679;
+    }
+
+    .delete-button:hover {
+        background-color: #b00020;
+    }
+
+    .highlight {
+        color: #cf6679;
+    }
+
+    .pagination button {
+        background-color: #bb86fc;
+    }
+
+    .pagination button:disabled {
+        background-color: var(--active-bg) !important;
+        opacity: 0.5;
+    }
+
+    #globalSearch {
+        background-color: #333333;
+        color: #e0e0e0;
+        border: 1px solid #555555;
+    }
+
+    #globalSearch::placeholder {
+        color: #bbbbbb;
+    }
+}

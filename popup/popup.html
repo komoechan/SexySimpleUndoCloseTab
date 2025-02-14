@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html data-theme="light" style="--popup-width: 500px;">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="globalSearch" placeholder="Search all tabs...">
+        </div>
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="closed-tabs">Recently Closed</button>
+                <button class="tab-button" data-tab="history">History</button>
+            </div>
+            <div class="navigation-controls">
+                <button id="globalPrevPage" class="icon-button" title="Previous Page">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <span id="globalPageInfo">1/1</span>
+                <button id="globalNextPage" class="icon-button" title="Next Page">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </div>
+        </div>
+        <div class="tab-content active" id="closed-tabs-content">
+            <div class="history-list" id="closedTabsList"></div>
+        </div>
+        <div class="tab-content" id="history-content">
+            <div class="history-list" id="historyList"></div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>

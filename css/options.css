@@ -1,0 +1,381 @@
+/* Add styles for dark and light themes */
+:root {
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --border-color: #e0e0e0;
+    --select-bg: #f5f5f5;
+    --select-border: #dddddd;
+    --hover-color: #f5f5f5;
+}
+
+[data-theme='dark'] {
+    --background-color: #1e1e1e;
+    --text-color: #ffffff;
+    --border-color: #404040;
+    --select-bg: #2d2d2d;
+    --select-border: #505050;
+    --hover-color: #2d2d2d;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 20px;
+    min-width: 300px;
+    transition: background-color 0.3s, color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: var(--background-color);
+    margin: 0 auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+    margin: 0 0 20px 0;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.option-group {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--select-border);
+    border-radius: 4px;
+    background-color: var(--select-bg);
+    color: var(--text-color);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 10px;
+    padding-right: 24px;
+}
+
+select:hover {
+    border-color: #666;
+}
+
+select:focus {
+    border-color: #0366d6;
+    box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.2);
+}
+
+.input-with-button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.number-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--select-border);
+    border-radius: 4px;
+    background-color: var(--select-bg);
+    color: var(--text-color);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.number-input:hover {
+    border-color: #666;
+}
+
+.number-input:focus {
+    border-color: #0366d6;
+    box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.2);
+}
+
+/* 输入范围提示样式 */
+.number-input[type="number"] {
+    position: relative;
+    text-align: right;
+}
+
+.number-input[type="number"]:invalid {
+    border-color: #dc3545;
+}
+
+.number-input[type="number"]:invalid + .save-button {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.number-input[type="number"]:invalid + .save-button:hover {
+    background-color: #0366d6;
+}
+
+.save-button {
+    padding: 8px 16px;
+    background-color: #0366d6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.save-button:hover {
+    background-color: #0256b4;
+}
+
+.help-text {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.slider-container {
+    width: 100%;
+}
+
+.slider-with-input {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #0366d6 var(--slider-value), var(--select-border) var(--slider-value));
+    outline: none;
+    margin: 10px 0;
+    position: relative;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #0366d6;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-webkit-slider-thumb:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.slider-tooltip {
+    position: absolute;
+    background: #333;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    bottom: 100%;
+    margin-bottom: 8px;
+}
+
+.slider:hover + .slider-tooltip {
+    opacity: 1;
+}
+
+.number-input {
+    width: 80px;
+    padding: 8px;
+    border: 1px solid var(--select-border);
+    border-radius: 4px;
+    background: var(--select-bg);
+    color: var(--text-color);
+    font-size: 14px;
+    text-align: center;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.number-input.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.number-input:focus {
+    outline: none;
+    border-color: #0366d6;
+    box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.2);
+}
+
+.number-input:focus.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        --background-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #404040;
+        --select-bg: #2d2d2d;
+        --select-border: #505050;
+    }
+
+    .save-button {
+        background-color: #bb86fc;
+    }
+
+    .save-button:hover {
+        background-color: #9965f5;
+    }
+
+    .number-input[type="number"]:invalid + .save-button:hover {
+        background-color: #bb86fc;
+    }
+
+    .slider {
+        background: linear-gradient(to right, #bb86fc var(--slider-value), var(--select-border) var(--slider-value));
+    }
+
+    .slider::-webkit-slider-thumb {
+        background: #bb86fc;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+
+    .slider::-webkit-slider-thumb:active {
+        box-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    .slider-tooltip {
+        background: #bb86fc;
+        color: #1a1a1a;
+    }
+
+    .number-input:focus {
+        border-color: #bb86fc;
+        box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.2);
+    }
+
+    .number-input.error {
+        border-color: #cf6679;
+        box-shadow: 0 0 0 2px rgba(207, 102, 121, 0.25);
+    }
+
+    .number-input:focus.error {
+        border-color: #cf6679;
+        box-shadow: 0 0 0 2px rgba(207, 102, 121, 0.25);
+    }
+}
+
+.settings-group {
+    padding: 20px;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.setting-item:hover {
+    background-color: var(--hover-color);
+}
+
+.setting-item label {
+    flex: 1;
+    margin-right: 15px;
+    font-size: 14px;
+}
+
+.setting-item select,
+.setting-item input {
+    width: 150px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.language-setting {
+    position: relative;
+}
+
+.language-setting label {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+}
+
+.globe-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    animation: rotate 20s linear infinite;
+    margin: 0;  /* 移除之前的 margin-right */
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Add additional styles as needed */
