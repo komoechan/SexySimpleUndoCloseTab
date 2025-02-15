@@ -4,7 +4,13 @@
   "version": "1.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
-  "permissions": ["tabs", "history", "storage", "favicon"],
+  "permissions": [
+    "tabs",
+    "history",
+    "storage",
+    "favicon",
+    "unlimitedStorage"
+  ],
   "host_permissions": ["*://*/*"],
   "action": {
     "default_popup": "popup/popup.html",

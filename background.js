@@ -1,6 +1,5 @@
 // Background script for handling closed tabs and context menu
 let maxRecentItems = 100; // 默认值
-const tabCache = new Map();
 
 // 使用更短的徽章文本格式化函数
 function formatBadgeText(count) {
@@ -27,32 +26,98 @@ async function initializeMaxRecent() {
     }
 }
 
-// 监听标签页更新事件
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.url || changeInfo.title) {
-        tabCache.set(tabId, {
+// 更新标签页缓存
+async function updateTabCache(tab) {
+    if (tab && tab.id && tab.url && !tab.url.startsWith('chrome://')) {
+        const { tabsCache = {} } = await chrome.storage.local.get(['tabsCache']);
+        tabsCache[tab.id] = {
             url: tab.url,
             title: tab.title || tab.url,
-            favIconUrl: tab.favIconUrl
-        });
+            favIconUrl: tab.favIconUrl,
+            lastUpdated: Date.now()
+        };
+        await chrome.storage.local.set({ tabsCache });
+    }
+}
+
+// 从缓存中获取标签页信息
+async function getTabFromCache(tabId) {
+    const { tabsCache = {} } = await chrome.storage.local.get(['tabsCache']);
+    return tabsCache[tabId];
+}
+
+// 删除缓存中的标签页信息
+async function removeTabFromCache(tabId) {
+    const { tabsCache = {} } = await chrome.storage.local.get(['tabsCache']);
+    delete tabsCache[tabId];
+    await chrome.storage.local.set({ tabsCache });
+}
+
+// 获取并缓存所有标签页信息
+async function cacheAllTabs() {
+    try {
+        const tabs = await chrome.tabs.query({});
+        const tabsCache = {};
+        
+        for (const tab of tabs) {
+            if (tab && tab.id && tab.url && !tab.url.startsWith('chrome://')) {
+                tabsCache[tab.id] = {
+                    url: tab.url,
+                    title: tab.title || tab.url,
+                    favIconUrl: tab.favIconUrl,
+                    lastUpdated: Date.now()
+                };
+            }
+        }
+        
+        await chrome.storage.local.set({ tabsCache });
+        console.log('Successfully cached all tabs');
+    } catch (error) {
+        console.error('Error caching all tabs:', error);
+    }
+}
+
+// 清理过期的标签页缓存
+async function cleanupTabsCache() {
+    try {
+        const { tabsCache = {} } = await chrome.storage.local.get(['tabsCache']);
+        const currentTabs = await chrome.tabs.query({});
+        const currentTabIds = new Set(currentTabs.map(tab => tab.id));
+        
+        // 删除已不存在的标签页的缓存
+        for (const tabId in tabsCache) {
+            if (!currentTabIds.has(parseInt(tabId))) {
+                delete tabsCache[tabId];
+            }
+        }
+        
+        await chrome.storage.local.set({ tabsCache });
+    } catch (error) {
+        console.error('Error cleaning up tabs cache:', error);
+    }
+}
+
+// 监听标签页更新事件
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete' || changeInfo.title || changeInfo.url) {
+        updateTabCache(tab);
     }
 });
 
 // 监听标签页创建事件
 chrome.tabs.onCreated.addListener((tab) => {
-    tabCache.set(tab.id, {
-        url: tab.url,
-        title: tab.title || tab.url,
-        favIconUrl: tab.favIconUrl
-    });
+    updateTabCache(tab);
 });
 
-// 存储关闭的标签页
+// 存储关闭的标签页并清除缓存
 chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
     if (removeInfo.isWindowClosing) return;
 
-    const cachedTab = tabCache.get(tabId);
-    if (!cachedTab || !cachedTab.url || cachedTab.url === 'chrome://newtab/') return;
+    const cachedTab = await getTabFromCache(tabId);
+    if (!cachedTab || !cachedTab.url || cachedTab.url === 'chrome://newtab/') {
+        await removeTabFromCache(tabId);
+        return;
+    }
 
     try {
         const { closedTabs = [] } = await chrome.storage.local.get(['closedTabs']);
@@ -77,7 +142,9 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 
         await chrome.storage.local.set({ closedTabs });
         await updateBadgeCount();
-        tabCache.delete(tabId);
+        
+        // 清除已关闭标签页的缓存
+        await removeTabFromCache(tabId);
     } catch (error) {
         console.error('Error handling closed tab:', error);
     }
@@ -86,16 +153,7 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 // 初始化设置
 chrome.runtime.onInstalled.addListener(async () => {
     await initializeMaxRecent();
-    
-    const tabs = await chrome.tabs.query({});
-    tabs.forEach(tab => {
-        tabCache.set(tab.id, {
-            url: tab.url,
-            title: tab.title || tab.url,
-            favIconUrl: tab.favIconUrl
-        });
-    });
-    
+    await cacheAllTabs();
     await updateBadgeCount();
 
     // 设置初始主题和语言，保持默认值不变
@@ -106,6 +164,12 @@ chrome.runtime.onInstalled.addListener(async () => {
         width: currentSettings.width || 400,
         language: currentSettings.language || 'en'
     });
+});
+
+// 在扩展启动时缓存所有标签页并清理过期缓存
+chrome.runtime.onStartup.addListener(async () => {
+    await cleanupTabsCache();
+    await cacheAllTabs();
 });
 
 // 监听主题变化并同步到所有页面
