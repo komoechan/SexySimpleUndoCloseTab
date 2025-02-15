@@ -8,8 +8,7 @@
     "tabs",
     "history",
     "storage",
-    "favicon",
-    "unlimitedStorage"
+    "favicon"
   ],
   "host_permissions": ["*://*/*"],
   "action": {
