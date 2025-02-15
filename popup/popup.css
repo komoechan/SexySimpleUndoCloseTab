@@ -4,6 +4,14 @@
     --border-color: #e0e0e0;
     --hover-bg: #f5f5f5;
     --active-bg: #e0e0e0;
+    --input-bg: #f5f5f5;  /* 新增搜索框背景色变量 */
+}
+
+/* 添加 body 样式以移除边距 */
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--background-color);
 }
 
 [data-theme='dark'] {
@@ -12,6 +20,7 @@
     --border-color: #404040;
     --hover-bg: #2d2d2d;
     --active-bg: #404040;
+    --input-bg: #2d2d2d;  /* 暗色主题下的搜索框背景色 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,6 +41,7 @@
     background: var(--background-color);
     display: flex;
     flex-direction: column;
+    /* 移除容器的边框 */
 }
 
 .search-container {
@@ -41,10 +51,20 @@
 #globalSearch {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 14px;
     box-sizing: border-box;
+    background: var(--input-bg);
+    color: var(--text-color);
+}
+
+/* 为所有搜索框添加focus状态的样式 */
+#searchInput:focus,
+#closedTabsSearch:focus,
+#globalSearch:focus {
+    outline: none;
+    border-color: var(--border-color);
 }
 
 /* Tab styles */
