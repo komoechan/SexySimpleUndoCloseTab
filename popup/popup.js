@@ -540,6 +540,21 @@ function displayHistoryItems() {
             e.stopPropagation();
         }, { passive: true });
 
+        div.addEventListener('mousedown', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        div.addEventListener('mouseup', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: item.url, active: false });
+            }
+        });
+
         div.addEventListener('click', (e) => {
             if (!e.target.classList.contains('delete-button')) {
                 chrome.tabs.create({ url: item.url, active: true });
@@ -638,6 +653,21 @@ function displayClosedTabs() {
         div.appendChild(linkContainer);
         div.appendChild(deleteButton);
         closedTabsList.appendChild(div);
+
+        div.addEventListener('mousedown', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        div.addEventListener('mouseup', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: tab.url, active: false });
+            }
+        });
 
         div.addEventListener('click', (e) => {
             if (!e.target.classList.contains('delete-button')) {
