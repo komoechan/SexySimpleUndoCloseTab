@@ -1,5 +1,5 @@
 // Background script for handling closed tabs and context menu
-let maxRecentItems = 100; // 默认值
+let maxRecentItems = 20000; // 改为更大的默认值
 
 // 使用更短的徽章文本格式化函数
 function formatBadgeText(count) {
@@ -18,11 +18,12 @@ async function updateBadgeCount() {
 // 初始化时获取最大记录数设置
 async function initializeMaxRecent() {
     try {
-        const { maxRecent = 100 } = await chrome.storage.sync.get(['maxRecent']);
+        const { maxRecent = 20000 } = await chrome.storage.sync.get(['maxRecent']);
         maxRecentItems = Math.max(1, Math.min(20000, maxRecent)); // 确保值在有效范围内
+        console.log('Initialized maxRecentItems to:', maxRecentItems); // 添加日志以便调试
     } catch (error) {
         console.error('Error initializing maxRecent:', error);
-        maxRecentItems = 100; // 出错时使用默认值
+        maxRecentItems = 20000; // 出错时使用更大的默认值
     }
 }
 
@@ -120,6 +121,10 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
     }
 
     try {
+        // 确保在使用前重新获取最新的 maxRecent 设置
+        const { maxRecent = 20000 } = await chrome.storage.sync.get(['maxRecent']);
+        maxRecentItems = Math.max(1, Math.min(20000, maxRecent));
+        
         const { closedTabs = [] } = await chrome.storage.local.get(['closedTabs']);
         
         // 检查是否已经存在相同的 URL
@@ -136,9 +141,15 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
             closedAt: Date.now()
         });
 
+        console.log('Current maxRecentItems:', maxRecentItems); // 添加日志以便调试
+        console.log('Closed tabs length before trim:', closedTabs.length); // 添加日志以便调试
+
+        // 确保不会意外截断
         if (closedTabs.length > maxRecentItems) {
             closedTabs.length = maxRecentItems;
         }
+
+        console.log('Closed tabs length after trim:', closedTabs.length); // 添加日志以便调试
 
         await chrome.storage.local.set({ closedTabs });
         await updateBadgeCount();
