@@ -9,8 +9,13 @@ function formatBadgeText(count) {
 
 // 更新图标计数器
 async function updateBadgeCount() {
-    const { closedTabs = [] } = await chrome.storage.local.get(['closedTabs']);
-    await chrome.action.setBadgeText({ text: formatBadgeText(closedTabs.length) });
+    // Get closedTabs from local storage and showTabCount from sync storage
+    const [{ closedTabs = [] }, { showTabCount = true }] = await Promise.all([
+        chrome.storage.local.get(['closedTabs']),
+        chrome.storage.sync.get(['showTabCount'])
+    ]);
+    const badgeText = showTabCount ? formatBadgeText(closedTabs.length) : '';
+    await chrome.action.setBadgeText({ text: badgeText });
     await chrome.action.setBadgeBackgroundColor({ color: '#6a1b9a' });
     await chrome.action.setBadgeTextColor({ color: '#ffffff' });
 }
@@ -168,12 +173,13 @@ chrome.runtime.onInstalled.addListener(async () => {
     await updateBadgeCount();
 
     // 设置初始主题和语言，保持默认值不变
-    const currentSettings = await chrome.storage.sync.get(['theme', 'maxRecent', 'width', 'language']);
+    const currentSettings = await chrome.storage.sync.get(['theme', 'maxRecent', 'width', 'language', 'showTabCount']);
     await chrome.storage.sync.set({ 
         theme: currentSettings.theme || 'light', 
         maxRecent: currentSettings.maxRecent || 20000, 
         width: currentSettings.width || 400,
-        language: currentSettings.language || 'en'
+        language: currentSettings.language || 'en',
+        showTabCount: currentSettings.showTabCount !== undefined ? currentSettings.showTabCount : true
     });
 });
 
@@ -197,6 +203,9 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'sync' && changes.maxRecent) {
         const newValue = changes.maxRecent.newValue;
         maxRecentItems = Math.max(1, Math.min(20000, newValue)); // 确保值在有效范围内
+    }
+    if (namespace === 'sync' && changes.showTabCount) {
+        updateBadgeCount();
     }
 });
 

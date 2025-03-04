@@ -9,7 +9,8 @@ const languageTexts = {
         maxRecentLabel: '最大记录数:',
         maxRecentHelp: '设置最近关闭标签页的最大记录数量 (1-20000)',
         popupWidthLabel: '弹窗宽度:',
-        popupWidthHelp: '设置弹出窗口的宽度 (300-800像素)'
+        popupWidthHelp: '设置弹出窗口的宽度 (300-800像素)',
+        showTabCountLabel: '显示标签页数量:'
     },
     en: {
         title: 'Extension Options',
@@ -21,7 +22,8 @@ const languageTexts = {
         maxRecentLabel: 'Max Recent Items:',
         maxRecentHelp: 'Set the maximum number of recently closed tabs (1-20000)',
         popupWidthLabel: 'Popup Width:',
-        popupWidthHelp: 'Set the width of the popup window (300-800 pixels)'
+        popupWidthHelp: 'Set the width of the popup window (300-800 pixels)',
+        showTabCountLabel: 'Show Tab Count:'
     },
     ja: {
         title: '拡張機能の設定',
@@ -33,7 +35,8 @@ const languageTexts = {
         maxRecentLabel: '最大履歴数:',
         maxRecentHelp: '最近閉じたタブの最大履歴数を設定 (1-20000)',
         popupWidthLabel: 'ポップアップの幅:',
-        popupWidthHelp: 'ポップアップウィンドウの幅を設定 (300-800ピクセル)'
+        popupWidthHelp: 'ポップアップウィンドウの幅を設定 (300-800ピクセル)',
+        showTabCountLabel: 'タブ数を表示:'
     },
     ko: {
         title: '확장 설정',
@@ -45,7 +48,8 @@ const languageTexts = {
         maxRecentLabel: '최대 최근 항목:',
         maxRecentHelp: '최근 닫은 탭의 최대 항목 수 설정 (1-20000)',
         popupWidthLabel: '팝업 너비:',
-        popupWidthHelp: '팝업 창의 너비 설정 (300-800픽셀)'
+        popupWidthHelp: '팝업 창의 너비 설정 (300-800픽셀)',
+        showTabCountLabel: '탭 수 표시:'
     },
     fr: {
         title: 'Options de l’extension',
@@ -57,7 +61,8 @@ const languageTexts = {
         maxRecentLabel: 'Articles récents max:',
         maxRecentHelp: 'Définir le nombre maximum d’onglets récemment fermés (1-20000)',
         popupWidthLabel: 'Largeur de la fenêtre:',
-        popupWidthHelp: 'Définir la largeur de la fenêtre contextuelle (300-800 pixels)'
+        popupWidthHelp: 'Définir la largeur de la fenêtre contextuelle (300-800 pixels)',
+        showTabCountLabel: 'Afficher le nombre d\'onglets:'
     },
     de: {
         title: 'Erweiterungsoptionen',
@@ -69,7 +74,8 @@ const languageTexts = {
         maxRecentLabel: 'Maximale kürzliche Elemente:',
         maxRecentHelp: 'Maximale Anzahl kürzlich geschlossener Tabs festlegen (1-20000)',
         popupWidthLabel: 'Popup-Breite:',
-        popupWidthHelp: 'Breite des Popup-Fensters festlegen (300-800 Pixel)'
+        popupWidthHelp: 'Breite des Popup-Fensters festlegen (300-800 Pixel)',
+        showTabCountLabel: 'Tab-Anzahl anzeigen:'
     },
     es: {
         title: 'Opciones de la extensión',
@@ -81,7 +87,8 @@ const languageTexts = {
         maxRecentLabel: 'Elementos recientes máximos:',
         maxRecentHelp: 'Establecer el número máximo de pestañas cerradas recientemente (1-20000)',
         popupWidthLabel: 'Ancho de la ventana emergente:',
-        popupWidthHelp: 'Establecer el ancho de la ventana emergente (300-800 píxeles)'
+        popupWidthHelp: 'Establecer el ancho de la ventana emergente (300-800 píxeles)',
+        showTabCountLabel: 'Mostrar recuento de pestañas:'
     }
 };
 
@@ -100,6 +107,7 @@ function updateLanguageTexts(language) {
     document.querySelectorAll('.help-text')[0].textContent = texts.maxRecentHelp;
     document.querySelector('label[for="popupWidth"]').textContent = texts.popupWidthLabel;
     document.querySelectorAll('.help-text')[1].textContent = texts.popupWidthHelp;
+    document.querySelector('label[for="showTabCount"]').textContent = texts.showTabCountLabel;
 
     // 更新最大记录数的单位显示
     const maxRecentValue = document.getElementById('maxRecent').value;
@@ -132,9 +140,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const popupWidthSlider = document.getElementById('popupWidthSlider');
     const popupWidthTooltip = document.getElementById('popupWidthTooltip');
     const languageSelect = document.getElementById('languageSelect');
+    const showTabCountCheckbox = document.getElementById('showTabCount');
     
     // 获取保存的设置
-    const { theme: savedTheme = 'system', maxRecent = 100, popupWidth = 500, language: savedLanguage = 'en' } = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language']);
+    const { theme: savedTheme = 'system', maxRecent = 100, popupWidth = 500, language: savedLanguage = 'en', showTabCount = true } = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language', 'showTabCount']);
     
     // 立即应用主题
     themeSelect.value = savedTheme;
@@ -157,6 +166,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 设置初始语言文本
     languageSelect.value = savedLanguage;
     updateLanguageTexts(savedLanguage);
+
+    // 设置显示标签页数量的值
+    showTabCountCheckbox.checked = showTabCount;
 
     // 更新滑块渐变效果的函数
     function updateSliderBackground(slider, value) {
@@ -291,6 +303,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateLanguageTexts(selectedLanguage);
     });
 
+    // 显示标签页数量选择事件监听
+    showTabCountCheckbox.addEventListener('change', async () => {
+        await chrome.storage.sync.set({ showTabCount: showTabCountCheckbox.checked });
+    });
+
     // 监听存储变化
     chrome.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'sync' && changes.theme) {
@@ -312,6 +329,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const newLanguage = changes.language.newValue;
             languageSelect.value = newLanguage;
             updateLanguageTexts(newLanguage);
+        }
+        if (namespace === 'sync' && changes.showTabCount) {
+            showTabCountCheckbox.checked = changes.showTabCount.newValue;
         }
     });
 
