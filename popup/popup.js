@@ -398,10 +398,128 @@ function loadClosedTabs() {
         if (query) {
             currentClosedTabs = currentClosedTabs.filter(tab => tab.title.toLowerCase().includes(query) || tab.url.toLowerCase().includes(query));
         }
-        displayClosedTabs();
+        
+        // 实现分页加载
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageItems = currentClosedTabs.slice(start, end);
+        
+        displayClosedTabs(pageItems);
         updateGlobalPagination(currentClosedTabs.length);
         updateTabCounts();
     });
+}
+
+function displayClosedTabs(pageItems) {
+    const closedTabsList = document.getElementById('closedTabsList');
+    closedTabsList.innerHTML = '';
+    closedTabsList.scrollTop = 0;
+
+    pageItems.forEach(tab => {
+        console.log('Displaying closed tab', tab);
+        const div = document.createElement('div');
+        div.className = 'history-item';
+
+        const favicon = document.createElement('img');
+        favicon.className = 'favicon';
+        
+        if (tab.favicon) {
+            favicon.src = tab.favicon;
+        } else {
+            favicon.src = faviconURL(tab.url);
+        }
+        
+        favicon.onerror = () => {
+            favicon.src = faviconURL('about:blank');
+        };
+
+        const linkContainer = document.createElement('div');
+        linkContainer.className = 'link-container';
+
+        const link = document.createElement('span');
+        link.className = 'history-link';
+        link.textContent = tab.title || tab.url;
+
+        const time = document.createElement('span');
+        time.className = 'visit-time';
+        time.textContent = getRelativeTimeString(tab.closedAt);
+
+        const deleteButton = document.createElement('span');
+        deleteButton.className = 'delete-button';
+        deleteButton.innerHTML = '×';
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chrome.storage.local.get(['closedTabs'], (result) => {
+                const closedTabs = result.closedTabs || [];
+                const updatedClosedTabs = closedTabs.filter(t => t.id !== tab.id);
+                chrome.storage.local.set({ closedTabs: updatedClosedTabs }, () => {
+                    loadClosedTabs();
+                });
+            });
+        });
+
+        let isMouseMove = false;
+        
+        link.addEventListener('mousedown', (e) => {
+            isMouseMove = false;
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        link.addEventListener('mousemove', () => {
+            isMouseMove = true;
+        });
+
+        link.addEventListener('mouseup', (e) => {
+            if (isMouseMove) return;
+            
+            if (e.button === 0) {
+                e.preventDefault();
+                chrome.tabs.create({ url: tab.url, active: true });
+                window.close();
+            } else if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: tab.url, active: false });
+            }
+        });
+
+        div.appendChild(favicon);
+        linkContainer.appendChild(link);
+        linkContainer.appendChild(time);
+        div.appendChild(linkContainer);
+        div.appendChild(deleteButton);
+        closedTabsList.appendChild(div);
+
+        div.addEventListener('mousedown', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        div.addEventListener('mouseup', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: tab.url, active: false });
+            }
+        });
+
+        div.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('delete-button')) {
+                chrome.tabs.create({ url: tab.url, active: true });
+                window.close();
+            }
+        });
+
+        // 禁用时间戳的文本选择
+        time.style.userSelect = 'none';
+    });
+
+    console.log('Displayed closed tabs', currentClosedTabs);
 }
 
 function escapeRegExp(string) {
@@ -565,122 +683,6 @@ function displayHistoryItems() {
         // 禁用时间戳的文本选择
         time.style.userSelect = 'none';
     });
-}
-
-function displayClosedTabs() {
-    const closedTabsList = document.getElementById('closedTabsList');
-    closedTabsList.innerHTML = '';
-    closedTabsList.scrollTop = 0;
-
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageItems = currentClosedTabs.slice(start, end);
-
-    pageItems.forEach(tab => {
-        console.log('Displaying closed tab', tab);
-        const div = document.createElement('div');
-        div.className = 'history-item';
-
-        const favicon = document.createElement('img');
-        favicon.className = 'favicon';
-        
-        if (tab.favicon) {
-            favicon.src = tab.favicon;
-        } else {
-            favicon.src = faviconURL(tab.url);
-        }
-        
-        favicon.onerror = () => {
-            favicon.src = faviconURL('about:blank');
-        };
-
-        const linkContainer = document.createElement('div');
-        linkContainer.className = 'link-container';
-
-        const link = document.createElement('span');
-        link.className = 'history-link';
-        link.textContent = tab.title || tab.url;
-
-        const time = document.createElement('span');
-        time.className = 'visit-time';
-        time.textContent = getRelativeTimeString(tab.closedAt);
-
-        const deleteButton = document.createElement('span');
-        deleteButton.className = 'delete-button';
-        deleteButton.innerHTML = '×';
-        deleteButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            chrome.storage.local.get(['closedTabs'], (result) => {
-                const closedTabs = result.closedTabs || [];
-                const updatedClosedTabs = closedTabs.filter(t => t.id !== tab.id);
-                chrome.storage.local.set({ closedTabs: updatedClosedTabs }, () => {
-                    loadClosedTabs();
-                });
-            });
-        });
-
-        let isMouseMove = false;
-        
-        link.addEventListener('mousedown', (e) => {
-            isMouseMove = false;
-            if (e.button === 1) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
-
-        link.addEventListener('mousemove', () => {
-            isMouseMove = true;
-        });
-
-        link.addEventListener('mouseup', (e) => {
-            if (isMouseMove) return;
-            
-            if (e.button === 0) {
-                e.preventDefault();
-                chrome.tabs.create({ url: tab.url, active: true });
-                window.close();
-            } else if (e.button === 1) {
-                e.preventDefault();
-                e.stopPropagation();
-                chrome.tabs.create({ url: tab.url, active: false });
-            }
-        });
-
-        div.appendChild(favicon);
-        linkContainer.appendChild(link);
-        linkContainer.appendChild(time);
-        div.appendChild(linkContainer);
-        div.appendChild(deleteButton);
-        closedTabsList.appendChild(div);
-
-        div.addEventListener('mousedown', (e) => {
-            if (e.button === 1) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
-
-        div.addEventListener('mouseup', (e) => {
-            if (e.button === 1) {
-                e.preventDefault();
-                e.stopPropagation();
-                chrome.tabs.create({ url: tab.url, active: false });
-            }
-        });
-
-        div.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('delete-button')) {
-                chrome.tabs.create({ url: tab.url, active: true });
-                window.close();
-            }
-        });
-
-        // 禁用时间戳的文本选择
-        time.style.userSelect = 'none';
-    });
-
-    console.log('Displayed closed tabs', currentClosedTabs);
 }
 
 // 替换原来的 updatePagination 和 updateClosedPagination 函数
