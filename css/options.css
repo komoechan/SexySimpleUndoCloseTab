@@ -379,3 +379,12 @@ select:focus {
 }
 
 /* Add additional styles as needed */
+
+.bottom-navigation {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.container.bottom-navigation {
+    justify-content: flex-end;
+}

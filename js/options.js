@@ -10,7 +10,13 @@ const languageTexts = {
         maxRecentHelp: '设置最近关闭标签页的最大记录数量 (1-20000)',
         popupWidthLabel: '弹窗宽度:',
         popupWidthHelp: '设置弹出窗口的宽度 (300-800像素)',
-        showTabCountLabel: '显示标签页数量:'
+        showTabCountLabel: '显示标签页数量:',
+        navigationPositionLabel: '导航位置:',
+        pageModeLabel: '翻页模式:',
+        navigationPositionTop: '顶部',
+        navigationPositionBottom: '底部',
+        pageModePagination: '分页按钮',
+        pageModeInfinite: '瀑布流'
     },
     en: {
         title: 'Extension Options',
@@ -23,7 +29,13 @@ const languageTexts = {
         maxRecentHelp: 'Set the maximum number of recently closed tabs (1-20000)',
         popupWidthLabel: 'Popup Width:',
         popupWidthHelp: 'Set the width of the popup window (300-800 pixels)',
-        showTabCountLabel: 'Show Tab Count:'
+        showTabCountLabel: 'Show Tab Count:',
+        navigationPositionLabel: 'Navigation Position:',
+        pageModeLabel: 'Page Mode:',
+        navigationPositionTop: 'Top',
+        navigationPositionBottom: 'Bottom',
+        pageModePagination: 'Pagination',
+        pageModeInfinite: 'Infinite'
     },
     ja: {
         title: '拡張機能の設定',
@@ -36,7 +48,13 @@ const languageTexts = {
         maxRecentHelp: '最近閉じたタブの最大履歴数を設定 (1-20000)',
         popupWidthLabel: 'ポップアップの幅:',
         popupWidthHelp: 'ポップアップウィンドウの幅を設定 (300-800ピクセル)',
-        showTabCountLabel: 'タブ数を表示:'
+        showTabCountLabel: 'タブ数を表示:',
+        navigationPositionLabel: 'ナビゲーション位置:',
+        pageModeLabel: 'ページモード:',
+        navigationPositionTop: '上部',
+        navigationPositionBottom: '下部',
+        pageModePagination: 'ページナビゲーション',
+        pageModeInfinite: 'インフィニティスクロール'
     },
     ko: {
         title: '확장 설정',
@@ -49,7 +67,13 @@ const languageTexts = {
         maxRecentHelp: '최근 닫은 탭의 최대 항목 수 설정 (1-20000)',
         popupWidthLabel: '팝업 너비:',
         popupWidthHelp: '팝업 창의 너비 설정 (300-800픽셀)',
-        showTabCountLabel: '탭 수 표시:'
+        showTabCountLabel: '탭 수 표시:',
+        navigationPositionLabel: '탐색 위치:',
+        pageModeLabel: '페이지 모드:',
+        navigationPositionTop: '상단',
+        navigationPositionBottom: '하단',
+        pageModePagination: '페이지 탐색',
+        pageModeInfinite: '무한 스크롤'
     },
     fr: {
         title: 'Options de l’extension',
@@ -62,7 +86,13 @@ const languageTexts = {
         maxRecentHelp: 'Définir le nombre maximum d’onglets récemment fermés (1-20000)',
         popupWidthLabel: 'Largeur de la fenêtre:',
         popupWidthHelp: 'Définir la largeur de la fenêtre contextuelle (300-800 pixels)',
-        showTabCountLabel: 'Afficher le nombre d\'onglets:'
+        showTabCountLabel: 'Afficher le nombre d\'onglets:',
+        navigationPositionLabel: 'Position de navigation:',
+        pageModeLabel: 'Mode de pagination:',
+        navigationPositionTop: 'Haut',
+        navigationPositionBottom: 'Bas',
+        pageModePagination: 'Pagination',
+        pageModeInfinite: 'Infini'
     },
     de: {
         title: 'Erweiterungsoptionen',
@@ -75,7 +105,13 @@ const languageTexts = {
         maxRecentHelp: 'Maximale Anzahl kürzlich geschlossener Tabs festlegen (1-20000)',
         popupWidthLabel: 'Popup-Breite:',
         popupWidthHelp: 'Breite des Popup-Fensters festlegen (300-800 Pixel)',
-        showTabCountLabel: 'Tab-Anzahl anzeigen:'
+        showTabCountLabel: 'Tab-Anzahl anzeigen:',
+        navigationPositionLabel: 'Navigation Position:',
+        pageModeLabel: 'Seitenmodus:',
+        navigationPositionTop: 'Oben',
+        navigationPositionBottom: 'Unten',
+        pageModePagination: 'Seitennavigation',
+        pageModeInfinite: 'Unendliche Scrollung'
     },
     es: {
         title: 'Opciones de la extensión',
@@ -88,7 +124,13 @@ const languageTexts = {
         maxRecentHelp: 'Establecer el número máximo de pestañas cerradas recientemente (1-20000)',
         popupWidthLabel: 'Ancho de la ventana emergente:',
         popupWidthHelp: 'Establecer el ancho de la ventana emergente (300-800 píxeles)',
-        showTabCountLabel: 'Mostrar recuento de pestañas:'
+        showTabCountLabel: 'Mostrar recuento de pestañas:',
+        navigationPositionLabel: 'Posición de navegación:',
+        pageModeLabel: 'Modo de paginación:',
+        navigationPositionTop: 'Arriba',
+        navigationPositionBottom: 'Abajo',
+        pageModePagination: 'Paginado',
+        pageModeInfinite: 'Infinito'
     }
 };
 
@@ -108,6 +150,12 @@ function updateLanguageTexts(language) {
     document.querySelector('label[for="popupWidth"]').textContent = texts.popupWidthLabel;
     document.querySelectorAll('.help-text')[1].textContent = texts.popupWidthHelp;
     document.querySelector('label[for="showTabCount"]').textContent = texts.showTabCountLabel;
+    document.querySelector('label[for="navigationPosition"]').textContent = texts.navigationPositionLabel;
+    document.querySelector('option[value="top"]').textContent = texts.navigationPositionTop;
+    document.querySelector('option[value="bottom"]').textContent = texts.navigationPositionBottom;
+    document.querySelector('label[for="pageMode"]').textContent = texts.pageModeLabel;
+    document.querySelector('option[value="pagination"]').textContent = texts.pageModePagination;
+    document.querySelector('option[value="infinite"]').textContent = texts.pageModeInfinite;
 
     // 更新最大记录数的单位显示
     const maxRecentValue = document.getElementById('maxRecent').value;
@@ -141,9 +189,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const popupWidthTooltip = document.getElementById('popupWidthTooltip');
     const languageSelect = document.getElementById('languageSelect');
     const showTabCountCheckbox = document.getElementById('showTabCount');
+    const navigationPositionSelect = document.getElementById('navigationPosition');
+    const pageModeSelect = document.getElementById('pageMode');
     
     // 获取保存的设置
-    const { theme: savedTheme = 'system', maxRecent = 100, popupWidth = 500, language: savedLanguage = 'en', showTabCount = true } = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language', 'showTabCount']);
+    const { theme: savedTheme = 'system', maxRecent = 100, popupWidth = 500, language: savedLanguage = 'en', showTabCount = true, navigationPosition = 'top', pageMode = 'pagination' } = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language', 'showTabCount', 'navigationPosition', 'pageMode']);
     
     // 立即应用主题
     themeSelect.value = savedTheme;
@@ -169,6 +219,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 设置显示标签页数量的值
     showTabCountCheckbox.checked = showTabCount;
+
+    // 设置导航位置和页面模式的值
+    navigationPositionSelect.value = navigationPosition;
+    pageModeSelect.value = pageMode;
 
     // 更新滑块渐变效果的函数
     function updateSliderBackground(slider, value) {
@@ -308,6 +362,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         await chrome.storage.sync.set({ showTabCount: showTabCountCheckbox.checked });
     });
 
+    // 导航位置选择事件监听
+    navigationPositionSelect.addEventListener('change', async () => {
+        const selectedPosition = navigationPositionSelect.value;
+        await chrome.storage.sync.set({ navigationPosition: selectedPosition });
+    });
+
+    // 页面模式选择事件监听
+    pageModeSelect.addEventListener('change', async () => {
+        const selectedMode = pageModeSelect.value;
+        await chrome.storage.sync.set({ pageMode: selectedMode });
+    });
+
     // 监听存储变化
     chrome.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'sync' && changes.theme) {
@@ -332,6 +398,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (namespace === 'sync' && changes.showTabCount) {
             showTabCountCheckbox.checked = changes.showTabCount.newValue;
+        }
+        if (namespace === 'sync' && changes.navigationPosition) {
+            const newNavigationPosition = changes.navigationPosition.newValue;
+            navigationPositionSelect.value = newNavigationPosition;
+        }
+        if (namespace === 'sync' && changes.pageMode) {
+            const newPageMode = changes.pageMode.newValue;
+            pageModeSelect.value = newPageMode;
         }
     });
 

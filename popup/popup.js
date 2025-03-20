@@ -84,6 +84,7 @@ let currentHistoryItems = [];
 let currentClosedTabs = [];
 let tabButtons; // 添加全局变量
 const itemsPerPage = 20;
+let isInfiniteScrollMode = false; // 添加一个标志来追踪当前是否为瀑布流模式
 
 document.addEventListener('DOMContentLoaded', async () => {
     const globalSearch = document.getElementById('globalSearch');
@@ -123,6 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     globalSearch.focus();
 
     globalSearch.addEventListener('input', () => {
+        // 搜索时总是重置页码和列表内容
         currentPage = 1;
         const activeTab = document.querySelector('.tab-button.active').dataset.tab;
         
@@ -132,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (activeTab === 'history') {
-            loadHistoryItems();
+            loadHistoryItems(false); // 搜索时始终使用false强制刷新
             // 只在有搜索内容时预加载另一个标签的数据
             if (globalSearch.value.trim()) {
                 chrome.storage.local.get(['closedTabs'], (result) => {
@@ -146,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
         } else {
-            loadClosedTabs();
+            loadClosedTabs(false); // 搜索时始终使用false强制刷新
             // 只在有搜索内容时预加载另一个标签的数据
             if (globalSearch.value.trim()) {
                 chrome.history.search({
@@ -201,13 +203,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         button.addEventListener('click', async () => {
             document.querySelector('.tab-button.active').classList.remove('active');
             button.classList.add('active');
+            
+            // 切换标签时重置页码
             currentPage = 1;
             
             document.querySelector('.tab-content.active').classList.remove('active');
             document.getElementById(`${button.dataset.tab}-content`).classList.add('active');
             
+            // 切换时重置任何加载指示器
+            document.querySelectorAll('.loading-indicator').forEach(indicator => {
+                indicator.remove();
+            });
+            
             if (button.dataset.tab === 'history') {
-                loadHistoryItems();
+                loadHistoryItems(false); // 始终使用false确保切换标签时清空内容
                 // 只在有搜索内容时预加载 closed tabs 数据
                 if (globalSearch.value.trim()) {
                     chrome.storage.local.get(['closedTabs'], (result) => {
@@ -223,7 +232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                 }
             } else {
-                loadClosedTabs();
+                loadClosedTabs(false); // 始终使用false确保切换标签时清空内容
                 // 只在有搜索内容时预加载 history 数据
                 if (globalSearch.value.trim()) {
                     chrome.history.search({
@@ -327,6 +336,90 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateUI();
         }
     });
+
+    const { navigationPosition = 'top', pageMode = 'pagination' } = await chrome.storage.sync.get(['navigationPosition', 'pageMode']);
+
+    // 根据导航位置设置模块位置
+    const container = document.querySelector('.container');
+    if (navigationPosition === 'bottom') {
+        container.classList.add('bottom-navigation');
+    } else {
+        container.classList.remove('bottom-navigation');
+    }
+
+    // 根据页面模式设置翻页模式
+    if (pageMode === 'infinite') {
+        globalPrevPage.style.display = 'none';
+        globalNextPage.style.display = 'none';
+        isInfiniteScrollMode = true;
+        
+        // 为每个列表容器添加滚动事件监听器，以便在接近底部时加载更多内容
+        const historyList = document.getElementById('historyList');
+        const closedTabsList = document.getElementById('closedTabsList');
+        
+        // 添加滚动监听器函数
+        const addScrollListener = (element) => {
+            let scrollTimeout = null;
+            
+            // 检查是否需要加载更多内容
+            const checkLoadMore = () => {
+                // 更宽松的触发条件，将0.2改为0.3
+                if (element.scrollHeight - element.scrollTop - element.clientHeight < element.clientHeight * 0.3) {
+                    if (!element.dataset.isLoading || element.dataset.isLoading === 'false') {
+                        loadMoreItems(element);
+                    }
+                }
+            };
+            
+            // 封装加载更多逻辑
+            const loadMoreItems = (elem) => {
+                elem.dataset.isLoading = 'true';
+                
+                setTimeout(() => {
+                    currentPage++;
+                    if (elem.id === 'historyList' && 
+                        document.querySelector('.tab-button.active').dataset.tab === 'history') {
+                        loadHistoryItems(true); // 传入true表示追加加载
+                    } else if (elem.id === 'closedTabsList' && 
+                               document.querySelector('.tab-button.active').dataset.tab === 'closed-tabs') {
+                        loadClosedTabs(true); // 传入true表示追加加载
+                    }
+                    // 重置加载状态
+                    setTimeout(() => {
+                        elem.dataset.isLoading = 'false';
+                    }, 300); // 减少重置时间
+                }, 100); // 减少延迟时间
+            };
+            
+            // 滚动事件
+            element.addEventListener('scroll', () => {
+                checkLoadMore();
+                
+                // 清除之前的定时器
+                if (scrollTimeout) {
+                    clearTimeout(scrollTimeout);
+                }
+                
+                // 设置新的定时器，滚动停止后再次检查
+                scrollTimeout = setTimeout(() => {
+                    checkLoadMore();
+                }, 150);
+            }, { passive: true });
+            
+            // 添加窗口大小改变事件监听器，以防止在调整窗口大小时未能触发加载
+            window.addEventListener('resize', () => {
+                checkLoadMore();
+            }, { passive: true });
+        };
+        
+        // 为两个列表都添加滚动监听器
+        addScrollListener(historyList);
+        addScrollListener(closedTabsList);
+    } else {
+        isInfiniteScrollMode = false;
+        globalPrevPage.style.display = 'block';
+        globalNextPage.style.display = 'block';
+    }
 });
 
 function updateTabCounts() {
@@ -354,7 +447,7 @@ function updateTabCounts() {
     });
 }
 
-function loadHistoryItems() {
+function loadHistoryItems(append = false) {
     const query = document.getElementById('globalSearch').value;
     const startTime = 0;
     
@@ -369,7 +462,6 @@ function loadHistoryItems() {
         startTime: startTime,
         maxResults: 2147483647
     }, (historyItems) => {
-        currentHistoryItems = historyItems;
         // 如果有搜索查询，过滤结果
         if (query) {
             const queryLower = query.toLowerCase();
@@ -377,14 +469,182 @@ function loadHistoryItems() {
                 (item.title && item.title.toLowerCase().includes(queryLower)) || 
                 item.url.toLowerCase().includes(queryLower)
             );
+        } else {
+            currentHistoryItems = historyItems;
         }
-        displayHistoryItems();
+        
+        // 在瀑布流模式下，仅首次加载或搜索时清空列表
+        if (!isInfiniteScrollMode || !append) {
+            displayHistoryItems();
+        } else {
+            // 在瀑布流模式下追加显示项目
+            appendHistoryItems();
+        }
+        
         updateGlobalPagination(currentHistoryItems.length);
         updateTabCounts();
     });
 }
 
-function loadClosedTabs() {
+// 修改加载指示器创建逻辑，给每个创建加载指示器的地方添加点击事件
+function createLoadingIndicator() {
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.id = 'loadingIndicator';
+    loadingIndicator.textContent = '加载更多...';
+    loadingIndicator.style.textAlign = 'center';
+    loadingIndicator.style.padding = '10px';
+    loadingIndicator.style.color = 'var(--text-color)';
+    loadingIndicator.style.opacity = '0.7';
+    loadingIndicator.style.cursor = 'pointer'; // 添加手型光标
+    
+    // 添加点击事件，手动触发加载
+    loadingIndicator.addEventListener('click', () => {
+        const parentElement = loadingIndicator.parentElement;
+        if (parentElement && (!parentElement.dataset.isLoading || parentElement.dataset.isLoading === 'false')) {
+            parentElement.dataset.isLoading = 'true';
+            currentPage++;
+            
+            if (parentElement.id === 'historyList') {
+                loadHistoryItems(true);
+            } else if (parentElement.id === 'closedTabsList') {
+                loadClosedTabs(true);
+            }
+            
+            setTimeout(() => {
+                parentElement.dataset.isLoading = 'false';
+            }, 300);
+        }
+    });
+    
+    return loadingIndicator;
+}
+
+// 修改appendHistoryItems函数，使用新的createLoadingIndicator函数
+function appendHistoryItems() {
+    const historyList = document.getElementById('historyList');
+    
+    // 计算当前页的起始和结束索引
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = currentHistoryItems.slice(start, end);
+    
+    // 如果没有更多项目可加载，则不执行任何操作
+    if (pageItems.length === 0) {
+        return;
+    }
+    
+    // 移除任何现有的加载指示器
+    const existingIndicator = historyList.querySelector('#loadingIndicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    // 追加新项目
+    pageItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        
+        const favicon = document.createElement('img');
+        favicon.className = 'favicon';
+        favicon.src = faviconURL(item.url);
+        favicon.onerror = () => {
+            favicon.src = faviconURL('about:blank');
+        };
+
+        const linkContainer = document.createElement('div');
+        linkContainer.className = 'link-container';
+
+        const link = document.createElement('span');
+        link.className = 'history-link';
+        link.textContent = item.title || item.url;
+
+        const time = document.createElement('span');
+        time.className = 'visit-time';
+        time.textContent = getRelativeTimeString(item.lastVisitTime);
+
+        const deleteButton = document.createElement('span');
+        deleteButton.className = 'delete-button';
+        deleteButton.innerHTML = '×';
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chrome.history.deleteUrl({ url: item.url }, () => {
+                loadHistoryItems();
+            });
+        });
+
+        div.appendChild(favicon);
+        linkContainer.appendChild(link);
+        linkContainer.appendChild(time);
+        div.appendChild(linkContainer);
+        div.appendChild(deleteButton);
+        historyList.appendChild(div);
+
+        let isMouseMove = false;
+        
+        link.addEventListener('mousedown', (e) => {
+            isMouseMove = false;
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        link.addEventListener('mousemove', () => {
+            isMouseMove = true;
+        });
+
+        link.addEventListener('mouseup', (e) => {
+            if (isMouseMove) return;
+            
+            if (e.button === 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: item.url, active: true });
+                window.close();
+            } else if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: item.url, active: false });
+            }
+        });
+
+        link.addEventListener('wheel', (e) => {
+            e.stopPropagation();
+        }, { passive: true });
+
+        div.addEventListener('mousedown', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        div.addEventListener('mouseup', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: item.url, active: false });
+            }
+        });
+
+        div.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('delete-button') && !e.target.classList.contains('history-link')) {
+                chrome.tabs.create({ url: item.url, active: true });
+                window.close();
+            }
+        });
+
+        time.style.userSelect = 'none';
+    });
+    
+    // 如果还有更多项目可加载，添加加载指示器
+    if (currentPage * itemsPerPage < currentHistoryItems.length) {
+        historyList.appendChild(createLoadingIndicator());
+    }
+}
+
+function loadClosedTabs(append = false) {
     const query = document.getElementById('globalSearch').value.toLowerCase();
     
     // 确保是当前活动标签才更新UI
@@ -399,21 +659,164 @@ function loadClosedTabs() {
             currentClosedTabs = currentClosedTabs.filter(tab => tab.title.toLowerCase().includes(query) || tab.url.toLowerCase().includes(query));
         }
         
-        // 实现分页加载
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const pageItems = currentClosedTabs.slice(start, end);
+        // 在瀑布流模式下，仅首次加载或搜索时清空列表
+        if (!isInfiniteScrollMode || !append) {
+            // 实现分页加载
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = currentClosedTabs.slice(start, end);
+            
+            displayClosedTabs(pageItems);
+        } else {
+            // 在瀑布流模式下追加显示项目
+            appendClosedTabs();
+        }
         
-        displayClosedTabs(pageItems);
         updateGlobalPagination(currentClosedTabs.length);
         updateTabCounts();
     });
 }
 
+// 修改appendClosedTabs函数，使用新的createLoadingIndicator函数
+function appendClosedTabs() {
+    const closedTabsList = document.getElementById('closedTabsList');
+    
+    // 计算当前页的起始和结束索引
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = currentClosedTabs.slice(start, end);
+    
+    // 如果没有更多项目可加载，则不执行任何操作
+    if (pageItems.length === 0) {
+        return;
+    }
+    
+    // 移除任何现有的加载指示器
+    const existingIndicator = closedTabsList.querySelector('#loadingIndicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    // 追加新项目
+    pageItems.forEach(tab => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+
+        const favicon = document.createElement('img');
+        favicon.className = 'favicon';
+        
+        if (tab.favicon) {
+            favicon.src = tab.favicon;
+        } else {
+            favicon.src = faviconURL(tab.url);
+        }
+        
+        favicon.onerror = () => {
+            favicon.src = faviconURL('about:blank');
+        };
+
+        const linkContainer = document.createElement('div');
+        linkContainer.className = 'link-container';
+
+        const link = document.createElement('span');
+        link.className = 'history-link';
+        link.textContent = tab.title || tab.url;
+
+        const time = document.createElement('span');
+        time.className = 'visit-time';
+        time.textContent = getRelativeTimeString(tab.closedAt);
+
+        const deleteButton = document.createElement('span');
+        deleteButton.className = 'delete-button';
+        deleteButton.innerHTML = '×';
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chrome.storage.local.get(['closedTabs'], (result) => {
+                const closedTabs = result.closedTabs || [];
+                const updatedClosedTabs = closedTabs.filter(t => t.id !== tab.id);
+                chrome.storage.local.set({ closedTabs: updatedClosedTabs }, () => {
+                    loadClosedTabs();
+                });
+            });
+        });
+
+        let isMouseMove = false;
+        
+        link.addEventListener('mousedown', (e) => {
+            isMouseMove = false;
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        link.addEventListener('mousemove', () => {
+            isMouseMove = true;
+        });
+
+        link.addEventListener('mouseup', (e) => {
+            if (isMouseMove) return;
+            
+            if (e.button === 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: tab.url, active: true });
+                window.close();
+            } else if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: tab.url, active: false });
+            }
+        });
+
+        div.appendChild(favicon);
+        linkContainer.appendChild(link);
+        linkContainer.appendChild(time);
+        div.appendChild(linkContainer);
+        div.appendChild(deleteButton);
+        closedTabsList.appendChild(div);
+
+        div.addEventListener('mousedown', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        div.addEventListener('mouseup', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                chrome.tabs.create({ url: tab.url, active: false });
+            }
+        });
+
+        div.addEventListener('click', (e) => {
+            // 只有当点击不是发生在link或delete-button上时才处理
+            if (!e.target.classList.contains('delete-button') && !e.target.classList.contains('history-link')) {
+                chrome.tabs.create({ url: tab.url, active: true });
+                window.close();
+            }
+        });
+
+        // 禁用时间戳的文本选择
+        time.style.userSelect = 'none';
+    });
+    
+    // 如果还有更多项目可加载，添加加载指示器
+    if (currentPage * itemsPerPage < currentClosedTabs.length) {
+        closedTabsList.appendChild(createLoadingIndicator());
+    }
+}
+
 function displayClosedTabs(pageItems) {
     const closedTabsList = document.getElementById('closedTabsList');
     closedTabsList.innerHTML = '';
-    closedTabsList.scrollTop = 0;
+    
+    // 只有在非瀑布流模式下才重置滚动位置
+    if (!isInfiniteScrollMode) {
+        closedTabsList.scrollTop = 0;
+    }
 
     pageItems.forEach(tab => {
         console.log('Displaying closed tab', tab);
@@ -477,6 +880,7 @@ function displayClosedTabs(pageItems) {
             
             if (e.button === 0) {
                 e.preventDefault();
+                e.stopPropagation();
                 chrome.tabs.create({ url: tab.url, active: true });
                 window.close();
             } else if (e.button === 1) {
@@ -509,7 +913,8 @@ function displayClosedTabs(pageItems) {
         });
 
         div.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('delete-button')) {
+            // 只有当点击不是发生在link或delete-button上时才处理
+            if (!e.target.classList.contains('delete-button') && !e.target.classList.contains('history-link')) {
                 chrome.tabs.create({ url: tab.url, active: true });
                 window.close();
             }
@@ -520,6 +925,11 @@ function displayClosedTabs(pageItems) {
     });
 
     console.log('Displayed closed tabs', currentClosedTabs);
+    
+    // 如果使用瀑布流模式且还有更多项目可加载，添加加载指示器
+    if (isInfiniteScrollMode && currentPage * itemsPerPage < currentClosedTabs.length) {
+        closedTabsList.appendChild(createLoadingIndicator());
+    }
 }
 
 function escapeRegExp(string) {
@@ -576,7 +986,11 @@ function displayHistoryItems() {
     const historyList = document.getElementById('historyList');
     const searchQuery = document.getElementById('globalSearch').value.trim();
     historyList.innerHTML = '';
-    historyList.scrollTop = 0;
+    
+    // 只有在非瀑布流模式下才重置滚动位置
+    if (!isInfiniteScrollMode) {
+        historyList.scrollTop = 0;
+    }
     
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -641,11 +1055,12 @@ function displayHistoryItems() {
         link.addEventListener('mouseup', (e) => {
             if (isMouseMove) return;
             
-            if (e.button === 0) { // 左键点击
+            if (e.button === 0) {
                 e.preventDefault();
+                e.stopPropagation();
                 chrome.tabs.create({ url: item.url, active: true });
                 window.close();
-            } else if (e.button === 1) { // 中键点击
+            } else if (e.button === 1) {
                 e.preventDefault();
                 e.stopPropagation();
                 chrome.tabs.create({ url: item.url, active: false });
@@ -674,7 +1089,8 @@ function displayHistoryItems() {
         });
 
         div.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('delete-button')) {
+            // 只有当点击不是发生在link或delete-button上时才处理
+            if (!e.target.classList.contains('delete-button') && !e.target.classList.contains('history-link')) {
                 chrome.tabs.create({ url: item.url, active: true });
                 window.close();
             }
@@ -683,6 +1099,11 @@ function displayHistoryItems() {
         // 禁用时间戳的文本选择
         time.style.userSelect = 'none';
     });
+    
+    // 如果使用瀑布流模式且还有更多项目可加载，添加加载指示器
+    if (isInfiniteScrollMode && currentPage * itemsPerPage < currentHistoryItems.length) {
+        historyList.appendChild(createLoadingIndicator());
+    }
 }
 
 // 替换原来的 updatePagination 和 updateClosedPagination 函数
@@ -693,7 +1114,16 @@ function updateGlobalPagination(totalItems) {
         
         // 始终显示分页信息，即使总条目数为0
         const totalPages = Math.max(1, Math.ceil(Math.max(totalItems, 1) / itemsPerPage));
-        document.getElementById('globalPageInfo').textContent = `${currentPage}/${totalPages}`;
+        
+        if (isInfiniteScrollMode) {
+            // 在瀑布流模式下，显示已加载项/总项
+            const loadedItems = Math.min(currentPage * itemsPerPage, totalItems);
+            document.getElementById('globalPageInfo').textContent = `${loadedItems}/${totalItems}`;
+        } else {
+            // 在分页模式下，显示当前页/总页数
+            document.getElementById('globalPageInfo').textContent = `${currentPage}/${totalPages}`;
+        }
+        
         document.getElementById('globalPrevPage').disabled = currentPage <= 1;
         document.getElementById('globalNextPage').disabled = currentPage >= totalPages || totalItems === 0;
     });
