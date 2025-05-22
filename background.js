@@ -209,5 +209,40 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
+// 监听来自popup的消息，提供分页数据
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'getClosedTabs') {
+        (async () => {
+            try {
+                const { closedTabs = [] } = await chrome.storage.local.get(['closedTabs']);
+                const { page = 1, pageSize = 20, query = '' } = message; // 接收查询参数
+
+                let filteredTabs = closedTabs;
+                if (query) {
+                    const lowerQuery = query.toLowerCase();
+                    filteredTabs = closedTabs.filter(tab =>
+                        (tab.title && tab.title.toLowerCase().includes(lowerQuery)) ||
+                        (tab.url && tab.url.toLowerCase().includes(lowerQuery))
+                    );
+                }
+
+                const start = (page - 1) * pageSize;
+                const end = start + pageSize;
+                const pageItems = filteredTabs.slice(start, end);
+
+                sendResponse({
+                    tabs: pageItems,
+                    totalCount: filteredTabs.length
+                });
+            } catch (error) {
+                console.error('Error fetching closed tabs in background:', error);
+                sendResponse({ tabs: [], totalCount: 0, error: error.message });
+            }
+        })();
+        return true; // Indicates that the response is sent asynchronously
+    }
+    // 可以添加其他消息类型处理，例如 favicon
+});
+
 // 导出一些工具函数供其他模块使用
 export { updateBadgeCount };

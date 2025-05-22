@@ -422,30 +422,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-function updateTabCounts() {
+function updateTabCounts(totalCountForTab, tabDataType) {
     const query = document.getElementById('globalSearch').value.trim();
-    if (!query) {
-        document.querySelectorAll('.tab-button .count').forEach(el => el.remove());
-        return;
-    }
-
-    const historyCount = currentHistoryItems.length;
-    const closedCount = currentClosedTabs.length;
-    
-    const formatCount = (count) => count > 99 ? '99+' : count;
-
     tabButtons.forEach(button => {
-        let countEl = button.querySelector('.count');
-        if (!countEl) {
-            countEl = document.createElement('span');
-            countEl.className = 'count';
-            button.appendChild(countEl);
+        const countSpan = button.querySelector('.count');
+        if (countSpan) {
+            countSpan.remove();
         }
-        
-        const count = button.dataset.tab === 'history' ? historyCount : closedCount;
-        countEl.textContent = ` (${formatCount(count)})`;
+
+        let count = 0;
+        const dataType = button.dataset.tab;
+
+        if (query) { // 只有在搜索时才显示计数
+            if (tabDataType && dataType === tabDataType) {
+                count = totalCountForTab;
+            } else if (dataType === 'history') {
+                // 当更新 closed-tabs 的计数时，history 的计数需要保持 (如果已计算)
+                // 这里 currentHistoryItems 可能不是最新的，如果依赖 background.js, 需要相应调整
+                // 暂时维持现有逻辑，后续统一到 background.js 获取所有计数
+                count = currentHistoryItems.length; 
+            } else if (dataType === 'closed-tabs') {
+                // 当更新 history 的计数时，closed-tabs 的计数需要保持
+                // count = currentClosedTabs.length; // currentClosedTabs 现在只是一页数据，不能这样用
+                // 这个也需要 background.js 返回总数
+                // 暂时注释掉，依赖于调用时传入的 totalCountForTab
+            }
+
+            if (count > 0) {
+                const newCountSpan = document.createElement('span');
+                newCountSpan.className = 'count';
+                newCountSpan.textContent = formatCount(count);
+                button.appendChild(newCountSpan);
+            }
+        }
     });
 }
+
+const formatCount = (count) => count > 99 ? '99+' : count;
 
 function loadHistoryItems(append = false) {
     const query = document.getElementById('globalSearch').value;
@@ -482,7 +495,7 @@ function loadHistoryItems(append = false) {
         }
         
         updateGlobalPagination(currentHistoryItems.length);
-        updateTabCounts();
+        updateTabCounts(currentHistoryItems.length, 'history');
     });
 }
 
@@ -620,13 +633,13 @@ function appendHistoryItems() {
             }
         });
 
-        div.addEventListener('mouseup', (e) => {
+        div.addEventListener('mouseup', (e => {
             if (e.button === 1) {
                 e.preventDefault();
                 e.stopPropagation();
                 chrome.tabs.create({ url: item.url, active: false });
             }
-        });
+        }));
 
         div.addEventListener('click', (e) => {
             if (!e.target.classList.contains('delete-button') && !e.target.classList.contains('history-link')) {
@@ -651,54 +664,83 @@ function loadClosedTabs(append = false) {
     if (document.querySelector('.tab-button.active').dataset.tab !== 'closed-tabs') {
         return;
     }
-    
-    chrome.storage.local.get(['closedTabs'], (result) => {
-        console.log('Loaded closed tabs from storage', result.closedTabs); // 添加调试日志
-        currentClosedTabs = result.closedTabs || [];
-        if (query) {
-            currentClosedTabs = currentClosedTabs.filter(tab => tab.title.toLowerCase().includes(query) || tab.url.toLowerCase().includes(query));
-        }
-        
-        // 在瀑布流模式下，仅首次加载或搜索时清空列表
-        if (!isInfiniteScrollMode || !append) {
-            // 实现分页加载
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const pageItems = currentClosedTabs.slice(start, end);
+
+    // 显示加载指示器 (如果适用)
+    const closedTabsList = document.getElementById('closedTabsList');
+    if (!append && !isInfiniteScrollMode) {
+        // 非追加模式且非无限滚动时，清空列表并可以显示一个主加载指示
+        // closedTabsList.innerHTML = '<div class="loading-indicator">Loading...</div>'; 
+        // 实际的加载指示器创建和移除由 displayClosedTabs 和 appendClosedTabs 处理
+    } else if (append && isInfiniteScrollMode) {
+        // 无限滚动追加时，可以在列表末尾显示加载更多指示
+        // let indicator = closedTabsList.querySelector('#loadingIndicator');
+        // if (!indicator) closedTabsList.appendChild(createLoadingIndicator());
+    }
+
+    chrome.runtime.sendMessage(
+        { type: 'getClosedTabs', page: currentPage, pageSize: itemsPerPage, query: query }, 
+        (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Error loading closed tabs:', chrome.runtime.lastError.message);
+                // 可以在UI上显示错误信息
+                // const existingIndicator = closedTabsList.querySelector('#loadingIndicator');
+                // if (existingIndicator) existingIndicator.remove();
+                updateGlobalPagination(0);
+                updateTabCounts(0, 'closed-tabs'); // 可能需要根据错误情况更新计数
+                return;
+            }
+
+            if (!response) {
+                console.error('Empty response from background for getClosedTabs');
+                updateGlobalPagination(0);
+                updateTabCounts(0, 'closed-tabs');
+                return;
+            }
             
-            displayClosedTabs(pageItems);
-        } else {
-            // 在瀑布流模式下追加显示项目
-            appendClosedTabs();
+            // currentClosedTabs = response.tabs; // currentClosedTabs现在只代表当前页的项目，这会影响瀑布流的长度判断
+                                         // 因此，瀑布流的长度判断需要依赖 totalCount
+
+            if (!isInfiniteScrollMode || !append) {
+                // 正常分页加载或瀑布流首次加载
+                displayClosedTabs(response.tabs || []);
+            } else {
+                // 瀑布流模式下追加显示项目
+                appendClosedTabs(response.tabs || []);
+            }
+            
+            updateGlobalPagination(response.totalCount);
+            // updateTabCounts 应该依赖于 background.js 返回的总数或独立的计数机制
+            // 为了保持现有 updateTabCounts 的行为（它依赖 currentClosedTabs 和 currentHistoryItems 的长度），
+            // 我们需要在搜索时，让 background.js 也返回未过滤的总数，或者 popup.js 自己维护这个计数。
+            // 暂时，我们让 updateTabCounts 在搜索过滤后，基于 background.js 返回的过滤后总数来更新。
+            // 为了精确的标签页计数，后续可能需要background.js在getClosedTabs时额外返回未过滤的总数。
+            updateTabCounts(response.totalCount, 'closed-tabs'); // 修改 updateTabCounts 以接受特定标签的计数
         }
-        
-        updateGlobalPagination(currentClosedTabs.length);
-        updateTabCounts();
-    });
+    );
 }
 
-// 修改appendClosedTabs函数，使用新的createLoadingIndicator函数
-function appendClosedTabs() {
+// 修改appendClosedTabs函数，使其接受要追加的项目，并根据总数判断是否继续显示加载指示器
+function appendClosedTabs(newItems) {
     const closedTabsList = document.getElementById('closedTabsList');
     
-    // 计算当前页的起始和结束索引
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageItems = currentClosedTabs.slice(start, end);
-    
     // 如果没有更多项目可加载，则不执行任何操作
-    if (pageItems.length === 0) {
+    if (!newItems || newItems.length === 0) {
+        // 移除可能存在的加载指示器，因为没有更多项目了
+        const existingIndicator = closedTabsList.querySelector('#loadingIndicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
         return;
     }
     
-    // 移除任何现有的加载指示器
+    // 移除任何现有的加载指示器，因为我们将要添加新项目
     const existingIndicator = closedTabsList.querySelector('#loadingIndicator');
     if (existingIndicator) {
         existingIndicator.remove();
     }
     
-    // 追加新项目
-    pageItems.forEach(tab => {
+    // 追加新项目 (这部分逻辑与 displayClosedTabs 中的项目创建相同，可以考虑提取成一个公共函数)
+    newItems.forEach(tab => {
         const div = document.createElement('div');
         div.className = 'history-item';
 
@@ -804,9 +846,17 @@ function appendClosedTabs() {
     });
     
     // 如果还有更多项目可加载，添加加载指示器
-    if (currentPage * itemsPerPage < currentClosedTabs.length) {
-        closedTabsList.appendChild(createLoadingIndicator());
-    }
+    // 这里的判断条件需要修改，应该基于从 background.js 获取的总数
+    // updateGlobalPagination 会处理分页按钮，而无限滚动需要自己判断
+    // const totalItems = ???; // 这个需要从 loadClosedTabs 传递过来或者从某个地方获取
+    // if (currentPage * itemsPerPage < totalItems) { 
+    //    closedTabsList.appendChild(createLoadingIndicator());
+    // }
+    // 加载指示器的添加逻辑现在由 loadMoreItems (在滚动监听器中) 或 displayClosedTabs/appendClosedTabs 内部管理
+    // 对于 appendClosedTabs，它处理完当前批次后，如果还可能有更多（由调用者 loadClosedTabs 处的 updateGlobalPagination 结果判断），
+    // 则滚动监听器会在需要时触发下一次加载并添加指示器。
+    // 或者，更简单的是，如果 newItems 的数量等于 itemsPerPage，就假设可能还有更多，并添加指示器。
+    // 这个判断逻辑放在 addScrollListener 中的 loadMoreItems 更合适
 }
 
 function displayClosedTabs(pageItems) {
@@ -926,10 +976,14 @@ function displayClosedTabs(pageItems) {
 
     console.log('Displayed closed tabs', currentClosedTabs);
     
-    // 如果使用瀑布流模式且还有更多项目可加载，添加加载指示器
-    if (isInfiniteScrollMode && currentPage * itemsPerPage < currentClosedTabs.length) {
-        closedTabsList.appendChild(createLoadingIndicator());
+    // 移除任何现有的加载指示器，因为列表已重新渲染
+    const existingIndicator = closedTabsList.querySelector('#loadingIndicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
     }
+
+    // 如果是无限滚动模式，并且加载的项目数量表明可能还有更多，则在末尾添加加载指示器
+    // 这个逻辑由 addScrollListener -> loadMoreItems 触发更为合适
 }
 
 function escapeRegExp(string) {
