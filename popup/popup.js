@@ -51,33 +51,48 @@ const languageTexts = {
     }
 };
 
-async function updateUI() {
-    const { language = 'en' } = await chrome.storage.sync.get('language');
-    const texts = languageTexts[language] || languageTexts.en;
-    
-    // 更新所有文本
-    if (document.querySelector('#globalPrevPage')) {
-        document.querySelector('#globalPrevPage').title = texts.prevPage;
-    }
-    if (document.querySelector('#globalNextPage')) {
-        document.querySelector('#globalNextPage').title = texts.nextPage;
-    }
-    if (document.querySelector('.tab-button[data-tab="closed-tabs"]')) {
-        document.querySelector('.tab-button[data-tab="closed-tabs"]').textContent = texts.recentTabs;
-    }
-    if (document.querySelector('.tab-button[data-tab="history"]')) {
-        document.querySelector('.tab-button[data-tab="history"]').textContent = texts.history;
-    }
-    if (document.getElementById('globalSearch')) {
-        document.getElementById('globalSearch').placeholder = texts.searchPlaceholder;
-    }
+// 全局配置缓存
+let globalConfig = {};
+
+// DOM 元素缓存
+let domCache = {};
+
+// 初始化 DOM 缓存
+function initDOMCache() {
+    domCache = {
+        globalSearch: document.getElementById('globalSearch'),
+        historyList: document.getElementById('historyList'),
+        closedTabsList: document.getElementById('closedTabsList'),
+        globalPrevPage: document.getElementById('globalPrevPage'),
+        globalNextPage: document.getElementById('globalNextPage'),
+        globalPageInfo: document.getElementById('globalPageInfo'),
+        container: document.querySelector('.container'),
+        closedTabsButton: document.querySelector('.tab-button[data-tab="closed-tabs"]'),
+        historyButton: document.querySelector('.tab-button[data-tab="history"]'),
+        tabButtons: document.querySelectorAll('.tab-button')
+    };
 }
 
-// 在 DOMContentLoaded 之前添加主题初始化代码
-(async function initializeTheme() {
-    const { theme = 'system' } = await chrome.storage.sync.get('theme');
-    applyTheme(theme);
-})();
+async function updateUI(config = globalConfig) {
+    const texts = languageTexts[config.language] || languageTexts.en;
+    
+    // 使用缓存的 DOM 元素，避免重复查询
+    if (domCache.globalPrevPage) {
+        domCache.globalPrevPage.title = texts.prevPage;
+    }
+    if (domCache.globalNextPage) {
+        domCache.globalNextPage.title = texts.nextPage;
+    }
+    if (domCache.closedTabsButton) {
+        domCache.closedTabsButton.textContent = texts.recentTabs;
+    }
+    if (domCache.historyButton) {
+        domCache.historyButton.textContent = texts.history;
+    }
+    if (domCache.globalSearch) {
+        domCache.globalSearch.placeholder = texts.searchPlaceholder;
+    }
+}
 
 let currentPage = 1;
 let currentHistoryItems = [];
@@ -87,275 +102,123 @@ const itemsPerPage = 20;
 let isInfiniteScrollMode = false; // 添加一个标志来追踪当前是否为瀑布流模式
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const globalSearch = document.getElementById('globalSearch');
-    const historyList = document.getElementById('historyList');
-    const closedTabsList = document.getElementById('closedTabsList');
-    const globalPrevPage = document.getElementById('globalPrevPage');
-    const globalNextPage = document.getElementById('globalNextPage');
-    tabButtons = document.querySelectorAll('.tab-button'); // 给全局变量赋值
-
-    // 优化 macOS 触摸板滚动
-    let lastTouchTime = 0;
-    historyList.addEventListener('touchstart', () => {
-        lastTouchTime = Date.now();
-    }, { passive: true });
-
-    historyList.addEventListener('scroll', () => {
-        // 只有非触摸滚动时才应用 pointerEvents 修复
-        if (Date.now() - lastTouchTime > 300) {
-            historyList.style.pointerEvents = 'none';
-            requestAnimationFrame(() => {
-                historyList.style.pointerEvents = 'auto';
-            });
-        }
-    }, { passive: true });
-
-    // 优化滚轮事件处理
-    historyList.addEventListener('wheel', (e) => {
-        const isAtTop = historyList.scrollTop === 0;
-        const isAtBottom = historyList.scrollHeight - historyList.scrollTop === historyList.clientHeight;
-
-        // 只在到达边界时阻止默认行为
-        if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    globalSearch.focus();
-
-    globalSearch.addEventListener('input', () => {
-        // 搜索时总是重置页码和列表内容
-        currentPage = 1;
-        const activeTab = document.querySelector('.tab-button.active').dataset.tab;
-        
-        // 清空搜索框时移除计数显示
-        if (!globalSearch.value.trim()) {
-            document.querySelectorAll('.tab-button .count').forEach(el => el.remove());
-        }
-        
-        if (activeTab === 'history') {
-            loadHistoryItems(false); // 搜索时始终使用false强制刷新
-            // 只在有搜索内容时预加载另一个标签的数据
-            if (globalSearch.value.trim()) {
-                chrome.storage.local.get(['closedTabs'], (result) => {
-                    const query = globalSearch.value.toLowerCase();
-                    currentClosedTabs = result.closedTabs || [];
-                    currentClosedTabs = currentClosedTabs.filter(tab => 
-                        tab.title.toLowerCase().includes(query) || 
-                        tab.url.toLowerCase().includes(query)
-                    );
-                    updateTabCounts();
-                });
-            }
-        } else {
-            loadClosedTabs(false); // 搜索时始终使用false强制刷新
-            // 只在有搜索内容时预加载另一个标签的数据
-            if (globalSearch.value.trim()) {
-                chrome.history.search({
-                    text: '',
-                    startTime: 0,
-                    maxResults: 2147483647
-                }, (historyItems) => {
-                    const query = globalSearch.value.trim();
-                    if (query) {
-                        const queryLower = query.toLowerCase();
-                        currentHistoryItems = historyItems.filter(item => 
-                            (item.title && item.title.toLowerCase().includes(queryLower)) || 
-                            item.url.toLowerCase().includes(queryLower)
-                        );
-                    } else {
-                        currentHistoryItems = historyItems;
-                    }
-                    updateTabCounts();
-                });
-            }
-        }
+    // 1. 立即初始化 DOM 缓存和基本 UI
+    initDOMCache();
+    
+    // 2. 异步加载配置，不阻塞基本 UI 显示
+    const configPromise = chrome.storage.sync.get({
+        language: 'en',
+        theme: 'system',
+        popupWidth: 500,
+        navigationPosition: 'top',
+        pageMode: 'pagination'
     });
 
-    globalPrevPage.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            if (document.querySelector('.tab-button.active').dataset.tab === 'history') {
-                loadHistoryItems();
-            } else {
-                loadClosedTabs();
-            }
-        }
+    // 3. 先设置基本的交互能力
+    domCache.globalSearch.focus();
+    tabButtons = domCache.tabButtons; // 给全局变量赋值
+
+    // 4. 等待配置加载完成
+    globalConfig = await configPromise;
+    
+    // 5. 应用配置到 UI
+    applyTheme(globalConfig.theme);
+
+    // 6. 设置核心事件监听器（延迟非关键事件监听器）
+    setupCoreEventListeners();
+
+    // 7. 延迟设置优化相关的事件监听器
+    requestAnimationFrame(() => {
+        setupOptimizationEventListeners();
     });
 
-    globalNextPage.addEventListener('click', () => {
-        currentPage++;
-        if (document.querySelector('.tab-button.active').dataset.tab === 'history') {
-            loadHistoryItems();
-        } else {
-            loadClosedTabs();
-        }
-    });
+    // 8. 初始化搜索框 placeholder 和加载数据
+    const texts = languageTexts[globalConfig.language];
+    domCache.globalSearch.placeholder = texts.searchPlaceholder;
 
-    document.addEventListener('click', (e) => {
-        // 仅在左键点击时关闭窗口
-        if (e.button === 0 && !e.target.closest('.container')) {
-            window.close();
-        }
-    });
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            document.querySelector('.tab-button.active').classList.remove('active');
-            button.classList.add('active');
-            
-            // 切换标签时重置页码
-            currentPage = 1;
-            
-            document.querySelector('.tab-content.active').classList.remove('active');
-            document.getElementById(`${button.dataset.tab}-content`).classList.add('active');
-            
-            // 切换时重置任何加载指示器
-            document.querySelectorAll('.loading-indicator').forEach(indicator => {
-                indicator.remove();
-            });
-            
-            if (button.dataset.tab === 'history') {
-                loadHistoryItems(false); // 始终使用false确保切换标签时清空内容
-                // 只在有搜索内容时预加载 closed tabs 数据
-                if (globalSearch.value.trim()) {
-                    chrome.storage.local.get(['closedTabs'], (result) => {
-                        const query = globalSearch.value.toLowerCase();
-                        currentClosedTabs = result.closedTabs || [];
-                        if (query) {
-                            currentClosedTabs = currentClosedTabs.filter(tab => 
-                                tab.title.toLowerCase().includes(query) || 
-                                tab.url.toLowerCase().includes(query)
-                            );
-                        }
-                        updateTabCounts();
-                    });
-                }
-            } else {
-                loadClosedTabs(false); // 始终使用false确保切换标签时清空内容
-                // 只在有搜索内容时预加载 history 数据
-                if (globalSearch.value.trim()) {
-                    chrome.history.search({
-                        text: '',
-                        startTime: 0,
-                        maxResults: 2147483647
-                    }, (historyItems) => {
-                        if (globalSearch.value.trim()) {
-                            const queryLower = globalSearch.value.toLowerCase();
-                            currentHistoryItems = historyItems.filter(item => 
-                                (item.title && item.title.toLowerCase().includes(queryLower)) || 
-                                item.url.toLowerCase().includes(queryLower)
-                            );
-                        } else {
-                            currentHistoryItems = historyItems;
-                        }
-                        updateTabCounts();
-                    });
-                }
-            }
-
-            const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
-            const texts = languageTexts[currentLanguage];
-            globalSearch.placeholder = texts.searchPlaceholder;
-        });
-    });
-
-    // 初始化搜索框 placeholder
-    const initialTab = document.querySelector('.tab-button.active').dataset.tab;
-    const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
-    const texts = languageTexts[currentLanguage];
-    globalSearch.placeholder = texts.searchPlaceholder;
-
-    // 确保初始加载时正确显示数据，无论是否有搜索查询
+    // 9. 延迟加载：默认只加载最近关闭的标签页数据，历史记录等用户切换时再加载
     const activeTab = document.querySelector('.tab-button.active').dataset.tab;
-    if (activeTab === 'history') {
-        chrome.history.search({
-            text: '',
-            startTime: 0,
-            maxResults: 2147483647
-        }, (historyItems) => {
-            currentHistoryItems = historyItems;
-            displayHistoryItems();
-            updateGlobalPagination(currentHistoryItems.length);
+    if (activeTab === 'closed-tabs') {
+        // 延迟一帧来避免阻塞初始渲染
+        requestAnimationFrame(() => {
+            loadClosedTabs();
         });
-    } else {
-        loadClosedTabs();
+    }
+    // 如果默认标签是历史记录，则加载历史记录
+    else if (activeTab === 'history') {
+        requestAnimationFrame(() => {
+            loadHistoryItems();
+        });
     }
 
-    // 从 chrome.storage.sync 获取主题设置
-    const { theme: savedTheme = 'system' } = await chrome.storage.sync.get('theme');
-    applyTheme(savedTheme);
+    // 10. 应用配置到页面元素
+    document.documentElement.style.setProperty('--popup-width', `${globalConfig.popupWidth}px`);
 
-    // 获取并应用宽度设置
-    const { popupWidth = 500 } = await chrome.storage.sync.get(['popupWidth']);
-    document.documentElement.style.setProperty('--popup-width', `${popupWidth}px`);
+    // 根据导航位置设置模块位置
+    if (globalConfig.navigationPosition === 'bottom') {
+        domCache.container.classList.add('bottom-navigation');
+    } else {
+        domCache.container.classList.remove('bottom-navigation');
+    }
+
+    // 11. 设置语言文本和初始化UI
+    updateLanguageTexts(globalConfig.language);
+    await updateUI(globalConfig);
+
+    // 12. 延迟加载数据（避免阻塞界面显示）
+    requestAnimationFrame(() => {
+        initializeDataLoading();
+    });
 
     // 监听系统主题变化
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
-        const { theme: currentTheme = 'system' } = await chrome.storage.sync.get('theme');
-        if (currentTheme === 'system') {
+        if (globalConfig.theme === 'system') {
             applyTheme('system');
         }
     });
 
-    // 监听其他页面的主题变化
+    // 监听配置变化
     chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'sync' && changes.theme) {
-            const newTheme = changes.theme.newValue;
-            applyTheme(newTheme);
-        }
         if (namespace === 'sync') {
+            if (changes.theme) {
+                globalConfig.theme = changes.theme.newValue;
+                applyTheme(globalConfig.theme);
+            }
             if (changes.popupWidth) {
-                const newWidth = changes.popupWidth.newValue;
-                document.documentElement.style.setProperty('--popup-width', `${newWidth}px`);
+                globalConfig.popupWidth = changes.popupWidth.newValue;
+                document.documentElement.style.setProperty('--popup-width', `${globalConfig.popupWidth}px`);
+            }
+            if (changes.language) {
+                globalConfig.language = changes.language.newValue;
+                updateLanguageTexts(globalConfig.language);
+                updateUI(globalConfig);
+            }
+            if (changes.navigationPosition) {
+                globalConfig.navigationPosition = changes.navigationPosition.newValue;
+                // 应用导航位置变化
+                const container = document.querySelector('.container');
+                if (globalConfig.navigationPosition === 'bottom') {
+                    container.classList.add('bottom-navigation');
+                } else {
+                    container.classList.remove('bottom-navigation');
+                }
+            }
+            if (changes.pageMode) {
+                globalConfig.pageMode = changes.pageMode.newValue;
+                // 重新应用页面模式设置
+                location.reload(); // 简单重载以应用新的页面模式
             }
         }
     });
 
-    // 设置初始语言文本
-    const { language: savedLanguage = 'en' } = await chrome.storage.sync.get('language');
-    updateLanguageTexts(savedLanguage);
+    // 13. 设置页面模式和无限滚动监听器（如果需要）
 
-    // 监听语言设置变化
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'sync' && changes.language) {
-            const newLanguage = changes.language.newValue;
-            updateLanguageTexts(newLanguage);
-        }
-    });
-
-    // 设置初始语言文本
-    updateLanguageTexts(savedLanguage);
-
-    // 初始化UI文本
-    await updateUI();
-    
-    // 监听语言变化
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'sync' && changes.language) {
-            updateUI();
-        }
-    });
-
-    const { navigationPosition = 'top', pageMode = 'pagination' } = await chrome.storage.sync.get(['navigationPosition', 'pageMode']);
-
-    // 根据导航位置设置模块位置
-    const container = document.querySelector('.container');
-    if (navigationPosition === 'bottom') {
-        container.classList.add('bottom-navigation');
-    } else {
-        container.classList.remove('bottom-navigation');
-    }
-
-    // 根据页面模式设置翻页模式
-    if (pageMode === 'infinite') {
-        globalPrevPage.style.display = 'none';
-        globalNextPage.style.display = 'none';
+    if (globalConfig.pageMode === 'infinite') {
+        domCache.globalPrevPage.style.display = 'none';
+        domCache.globalNextPage.style.display = 'none';
         isInfiniteScrollMode = true;
         
         // 为每个列表容器添加滚动事件监听器，以便在接近底部时加载更多内容
-        const historyList = document.getElementById('historyList');
-        const closedTabsList = document.getElementById('closedTabsList');
         
         // 添加滚动监听器函数
         const addScrollListener = (element) => {
@@ -413,17 +276,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         
         // 为两个列表都添加滚动监听器
-        addScrollListener(historyList);
-        addScrollListener(closedTabsList);
+        addScrollListener(domCache.historyList);
+        addScrollListener(domCache.closedTabsList);
     } else {
         isInfiniteScrollMode = false;
-        globalPrevPage.style.display = 'block';
-        globalNextPage.style.display = 'block';
+        domCache.globalPrevPage.style.display = 'block';
+        domCache.globalNextPage.style.display = 'block';
     }
 });
 
 function updateTabCounts(totalCountForTab, tabDataType) {
-    const query = document.getElementById('globalSearch').value.trim();
+    const query = domCache.globalSearch.value.trim();
     tabButtons.forEach(button => {
         const countSpan = button.querySelector('.count');
         if (countSpan) {
@@ -460,8 +323,193 @@ function updateTabCounts(totalCountForTab, tabDataType) {
 
 const formatCount = (count) => count > 99 ? '99+' : count;
 
+// 事件处理函数
+function handleSearchInput() {
+    // 搜索时总是重置页码和列表内容
+    currentPage = 1;
+    const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+    
+    // 清空搜索框时移除计数显示
+    if (!domCache.globalSearch.value.trim()) {
+        document.querySelectorAll('.tab-button .count').forEach(el => el.remove());
+    }
+    
+    if (activeTab === 'history') {
+        loadHistoryItems(false); // 搜索时始终使用false强制刷新
+        // 只在有搜索内容时预加载另一个标签的数据
+        if (domCache.globalSearch.value.trim()) {
+            chrome.storage.local.get(['closedTabs'], (result) => {
+                const query = domCache.globalSearch.value.toLowerCase();
+                currentClosedTabs = result.closedTabs || [];
+                currentClosedTabs = currentClosedTabs.filter(tab => 
+                    tab.title.toLowerCase().includes(query) || 
+                    tab.url.toLowerCase().includes(query)
+                );
+                updateTabCounts();
+            });
+        }
+    } else {
+        loadClosedTabs(false); // 搜索时始终使用false强制刷新
+        // 只在有搜索内容时预加载 history 数据
+        if (domCache.globalSearch.value.trim()) {
+            loadHistoryItemsForSearch(domCache.globalSearch.value.trim());
+        }
+    }
+}
+
+function handlePrevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        if (document.querySelector('.tab-button.active').dataset.tab === 'history') {
+            loadHistoryItems();
+        } else {
+            loadClosedTabs();
+        }
+    }
+}
+
+function handleNextPage() {
+    currentPage++;
+    if (document.querySelector('.tab-button.active').dataset.tab === 'history') {
+        loadHistoryItems();
+    } else {
+        loadClosedTabs();
+    }
+}
+
+async function handleTabClick(event) {
+    const button = event.currentTarget;
+    document.querySelector('.tab-button.active').classList.remove('active');
+    button.classList.add('active');
+    
+    // 切换标签时重置页码
+    currentPage = 1;
+    
+    document.querySelector('.tab-content.active').classList.remove('active');
+    document.getElementById(`${button.dataset.tab}-content`).classList.add('active');
+    
+    // 切换时重置任何加载指示器
+    document.querySelectorAll('.loading-indicator').forEach(indicator => {
+        indicator.remove();
+    });
+    
+    if (button.dataset.tab === 'history') {
+        // 延迟加载：只在切换到历史记录标签时才加载数据
+        loadHistoryItems(false);
+        // 只在有搜索内容时预加载 closed tabs 数据
+        if (domCache.globalSearch.value.trim()) {
+            chrome.storage.local.get(['closedTabs'], (result) => {
+                const query = domCache.globalSearch.value.toLowerCase();
+                currentClosedTabs = result.closedTabs || [];
+                if (query) {
+                    currentClosedTabs = currentClosedTabs.filter(tab => 
+                        tab.title.toLowerCase().includes(query) || 
+                        tab.url.toLowerCase().includes(query)
+                    );
+                }
+                updateTabCounts();
+            });
+        }
+    } else {
+        loadClosedTabs(false); // 始终使用false确保切换标签时清空内容
+        // 只在有搜索内容时预加载 history 数据
+        if (domCache.globalSearch.value.trim()) {
+            loadHistoryItemsForSearch(domCache.globalSearch.value.trim());
+        }
+    }
+
+    const texts = languageTexts[globalConfig.language];
+    domCache.globalSearch.placeholder = texts.searchPlaceholder;
+}
+
+function handleOutsideClick(e) {
+    // 仅在左键点击时关闭窗口
+    if (e.button === 0 && !e.target.closest('.container')) {
+        window.close();
+    }
+}
+
+// 初始化数据加载
+function initializeDataLoading() {
+    const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+    if (activeTab === 'closed-tabs') {
+        loadClosedTabs();
+    } else if (activeTab === 'history') {
+        loadHistoryItems();
+    }
+}
+
+// 设置核心事件监听器（用户交互相关）
+function setupCoreEventListeners() {
+    // 搜索输入事件
+    domCache.globalSearch.addEventListener('input', handleSearchInput);
+    
+    // 分页按钮事件
+    domCache.globalPrevPage.addEventListener('click', handlePrevPage);
+    domCache.globalNextPage.addEventListener('click', handleNextPage);
+    
+    // 标签切换事件
+    domCache.tabButtons.forEach(button => {
+        button.addEventListener('click', handleTabClick);
+    });
+    
+    // 关闭窗口事件
+    document.addEventListener('click', handleOutsideClick);
+}
+
+// 设置优化相关的事件监听器（性能优化相关）
+function setupOptimizationEventListeners() {
+    // 优化 macOS 触摸板滚动
+    let lastTouchTime = 0;
+    domCache.historyList.addEventListener('touchstart', () => {
+        lastTouchTime = Date.now();
+    }, { passive: true });
+
+    domCache.historyList.addEventListener('scroll', () => {
+        // 只有非触摸滚动时才应用 pointerEvents 修复
+        if (Date.now() - lastTouchTime > 300) {
+            domCache.historyList.style.pointerEvents = 'none';
+            requestAnimationFrame(() => {
+                domCache.historyList.style.pointerEvents = 'auto';
+            });
+        }
+    }, { passive: true });
+
+    // 优化滚轮事件处理
+    domCache.historyList.addEventListener('wheel', (e) => {
+        const isAtTop = domCache.historyList.scrollTop === 0;
+        const isAtBottom = domCache.historyList.scrollHeight - domCache.historyList.scrollTop === domCache.historyList.clientHeight;
+
+        // 只在到达边界时阻止默认行为
+        if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+}
+
+// 专门用于搜索时预加载历史数据的函数
+function loadHistoryItemsForSearch(query) {
+    // 搜索时使用全量数据，确保用户能找到所有相关的历史记录
+    chrome.history.search({
+        text: '',  // 始终用空字符串获取所有历史记录
+        startTime: 0,
+        maxResults: 2147483647  // 搜索时使用全量数据
+    }, (historyItems) => {
+        if (query) {
+            const queryLower = query.toLowerCase();
+            currentHistoryItems = historyItems.filter(item => 
+                (item.title && item.title.toLowerCase().includes(queryLower)) || 
+                item.url.toLowerCase().includes(queryLower)
+            );
+        } else {
+            currentHistoryItems = historyItems;
+        }
+        updateTabCounts(currentHistoryItems.length, 'history');
+    });
+}
+
 function loadHistoryItems(append = false) {
-    const query = document.getElementById('globalSearch').value;
+    const query = domCache.globalSearch.value;
     const startTime = 0;
     
     // 确保是当前活动标签才更新UI
@@ -469,13 +517,20 @@ function loadHistoryItems(append = false) {
         return;
     }
     
-    // 修改搜索条件，当搜索框为空时搜索所有历史记录
+    // 优化：根据是否有搜索查询来决定 maxResults
+    // 有搜索查询时使用全量搜索，无查询时限制数量以提升性能
+    const maxResults = query ? 
+        2147483647 : // 搜索时使用全量数据
+        (isInfiniteScrollMode ? 
+            Math.min(currentPage * itemsPerPage * 2, 10000) : // 无限滚动时适当增加缓冲
+            Math.min(currentPage * itemsPerPage * 5, 5000));   // 分页模式下预加载更多页面
+    
     chrome.history.search({
-        text: '',  // 始终搜索所有历史记录
+        text: '',  // 始终用空字符串获取所有历史记录，保持原有搜索逻辑
         startTime: startTime,
-        maxResults: 2147483647
+        maxResults: maxResults
     }, (historyItems) => {
-        // 如果有搜索查询，过滤结果
+        // 在客户端进行过滤，保证搜索结果的一致性
         if (query) {
             const queryLower = query.toLowerCase();
             currentHistoryItems = historyItems.filter(item => 
@@ -535,7 +590,7 @@ function createLoadingIndicator() {
 
 // 修改appendHistoryItems函数，使用新的createLoadingIndicator函数
 function appendHistoryItems() {
-    const historyList = document.getElementById('historyList');
+    const historyList = domCache.historyList;
     
     // 计算当前页的起始和结束索引
     const start = (currentPage - 1) * itemsPerPage;
@@ -658,7 +713,7 @@ function appendHistoryItems() {
 }
 
 function loadClosedTabs(append = false) {
-    const query = document.getElementById('globalSearch').value.toLowerCase();
+    const query = domCache.globalSearch.value.toLowerCase();
     
     // 确保是当前活动标签才更新UI
     if (document.querySelector('.tab-button.active').dataset.tab !== 'closed-tabs') {
@@ -666,15 +721,14 @@ function loadClosedTabs(append = false) {
     }
 
     // 显示加载指示器 (如果适用)
-    const closedTabsList = document.getElementById('closedTabsList');
     if (!append && !isInfiniteScrollMode) {
         // 非追加模式且非无限滚动时，清空列表并可以显示一个主加载指示
         // closedTabsList.innerHTML = '<div class="loading-indicator">Loading...</div>'; 
         // 实际的加载指示器创建和移除由 displayClosedTabs 和 appendClosedTabs 处理
     } else if (append && isInfiniteScrollMode) {
         // 无限滚动追加时，可以在列表末尾显示加载更多指示
-        // let indicator = closedTabsList.querySelector('#loadingIndicator');
-        // if (!indicator) closedTabsList.appendChild(createLoadingIndicator());
+        // let indicator = domCache.closedTabsList.querySelector('#loadingIndicator');
+        // if (!indicator) domCache.closedTabsList.appendChild(createLoadingIndicator());
     }
 
     chrome.runtime.sendMessage(
@@ -683,7 +737,7 @@ function loadClosedTabs(append = false) {
             if (chrome.runtime.lastError) {
                 console.error('Error loading closed tabs:', chrome.runtime.lastError.message);
                 // 可以在UI上显示错误信息
-                // const existingIndicator = closedTabsList.querySelector('#loadingIndicator');
+                // const existingIndicator = domCache.closedTabsList.querySelector('#loadingIndicator');
                 // if (existingIndicator) existingIndicator.remove();
                 updateGlobalPagination(0);
                 updateTabCounts(0, 'closed-tabs'); // 可能需要根据错误情况更新计数
@@ -721,7 +775,7 @@ function loadClosedTabs(append = false) {
 
 // 修改appendClosedTabs函数，使其接受要追加的项目，并根据总数判断是否继续显示加载指示器
 function appendClosedTabs(newItems) {
-    const closedTabsList = document.getElementById('closedTabsList');
+    const closedTabsList = domCache.closedTabsList;
     
     // 如果没有更多项目可加载，则不执行任何操作
     if (!newItems || newItems.length === 0) {
@@ -860,7 +914,7 @@ function appendClosedTabs(newItems) {
 }
 
 function displayClosedTabs(pageItems) {
-    const closedTabsList = document.getElementById('closedTabsList');
+    const closedTabsList = domCache.closedTabsList;
     closedTabsList.innerHTML = '';
     
     // 只有在非瀑布流模式下才重置滚动位置
@@ -1037,8 +1091,8 @@ function faviconURL(websiteUrl) {
 }
 
 function displayHistoryItems() {
-    const historyList = document.getElementById('historyList');
-    const searchQuery = document.getElementById('globalSearch').value.trim();
+    const historyList = domCache.historyList;
+    const searchQuery = domCache.globalSearch.value.trim();
     historyList.innerHTML = '';
     
     // 只有在非瀑布流模式下才重置滚动位置
@@ -1172,14 +1226,14 @@ function updateGlobalPagination(totalItems) {
         if (isInfiniteScrollMode) {
             // 在瀑布流模式下，显示已加载项/总项
             const loadedItems = Math.min(currentPage * itemsPerPage, totalItems);
-            document.getElementById('globalPageInfo').textContent = `${loadedItems}/${totalItems}`;
+            domCache.globalPageInfo.textContent = `${loadedItems}/${totalItems}`;
         } else {
             // 在分页模式下，显示当前页/总页数
-            document.getElementById('globalPageInfo').textContent = `${currentPage}/${totalPages}`;
+            domCache.globalPageInfo.textContent = `${currentPage}/${totalPages}`;
         }
         
-        document.getElementById('globalPrevPage').disabled = currentPage <= 1;
-        document.getElementById('globalNextPage').disabled = currentPage >= totalPages || totalItems === 0;
+        domCache.globalPrevPage.disabled = currentPage <= 1;
+        domCache.globalNextPage.disabled = currentPage >= totalPages || totalItems === 0;
     });
 }
 
