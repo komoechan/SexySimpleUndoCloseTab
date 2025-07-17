@@ -16,7 +16,16 @@ const languageTexts = {
         navigationPositionTop: '顶部',
         navigationPositionBottom: '底部',
         pageModePagination: '分页按钮',
-        pageModeInfinite: '瀑布流'
+        pageModeInfinite: '瀑布流',
+        dataManagementLabel: '数据管理:',
+        clearClosedTabsBtn: '清除所有关闭标签页',
+        clearClosedTabsHelp: '此操作将删除所有保存的关闭标签页记录，不影响浏览器历史记录。',
+        confirmDeleteTitle: '确认删除',
+        confirmDeleteMessage: '您确定要删除所有已保存的关闭标签页吗？此操作不可撤销。',
+        tabCountText: '当前保存的标签页数量:',
+        cancelBtn: '取消',
+        confirmBtn: '确认删除',
+        deleteSuccess: '已成功删除所有关闭标签页记录'
     },
     en: {
         title: 'Extension Options',
@@ -35,7 +44,16 @@ const languageTexts = {
         navigationPositionTop: 'Top',
         navigationPositionBottom: 'Bottom',
         pageModePagination: 'Pagination',
-        pageModeInfinite: 'Infinite'
+        pageModeInfinite: 'Infinite',
+        dataManagementLabel: 'Data Management:',
+        clearClosedTabsBtn: 'Clear All Closed Tabs',
+        clearClosedTabsHelp: 'This will delete all saved closed tab records without affecting browser history.',
+        confirmDeleteTitle: 'Confirm Delete',
+        confirmDeleteMessage: 'Are you sure you want to delete all saved closed tabs? This action cannot be undone.',
+        tabCountText: 'Current saved tabs count:',
+        cancelBtn: 'Cancel',
+        confirmBtn: 'Confirm Delete',
+        deleteSuccess: 'Successfully deleted all closed tab records'
     },
     ja: {
         title: '拡張機能の設定',
@@ -54,7 +72,16 @@ const languageTexts = {
         navigationPositionTop: '上部',
         navigationPositionBottom: '下部',
         pageModePagination: 'ページナビゲーション',
-        pageModeInfinite: 'インフィニティスクロール'
+        pageModeInfinite: 'インフィニティスクロール',
+        dataManagementLabel: 'データ管理:',
+        clearClosedTabsBtn: '閉じたタブを全て削除',
+        clearClosedTabsHelp: 'この操作により、保存された閉じたタブの記録がすべて削除されます。ブラウザの履歴には影響しません。',
+        confirmDeleteTitle: '削除の確認',
+        confirmDeleteMessage: '保存されたすべての閉じたタブを削除してもよろしいですか？この操作は元に戻せません。',
+        tabCountText: '現在保存されているタブ数:',
+        cancelBtn: 'キャンセル',
+        confirmBtn: '削除確認',
+        deleteSuccess: '閉じたタブの記録を正常に削除しました'
     },
     ko: {
         title: '확장 설정',
@@ -73,7 +100,16 @@ const languageTexts = {
         navigationPositionTop: '상단',
         navigationPositionBottom: '하단',
         pageModePagination: '페이지 탐색',
-        pageModeInfinite: '무한 스크롤'
+        pageModeInfinite: '무한 스크롤',
+        dataManagementLabel: '데이터 관리:',
+        clearClosedTabsBtn: '모든 닫힌 탭 삭제',
+        clearClosedTabsHelp: '저장된 모든 닫힌 탭 기록을 삭제합니다. 브라우저 기록에는 영향을 주지 않습니다.',
+        confirmDeleteTitle: '삭제 확인',
+        confirmDeleteMessage: '저장된 모든 닫힌 탭을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+        tabCountText: '현재 저장된 탭 수:',
+        cancelBtn: '취소',
+        confirmBtn: '삭제 확인',
+        deleteSuccess: '닫힌 탭 기록이 성공적으로 삭제되었습니다'
     },
     fr: {
         title: 'Options de l’extension',
@@ -92,7 +128,16 @@ const languageTexts = {
         navigationPositionTop: 'Haut',
         navigationPositionBottom: 'Bas',
         pageModePagination: 'Pagination',
-        pageModeInfinite: 'Infini'
+        pageModeInfinite: 'Infini',
+        dataManagementLabel: 'Gestion des données:',
+        clearClosedTabsBtn: 'Supprimer tous les onglets fermés',
+        clearClosedTabsHelp: 'Cette opération supprimera tous les enregistrements d\'onglets fermés sauvegardés sans affecter l\'historique du navigateur.',
+        confirmDeleteTitle: 'Confirmer la suppression',
+        confirmDeleteMessage: 'Êtes-vous sûr de vouloir supprimer tous les onglets fermés sauvegardés ? Cette action ne peut pas être annulée.',
+        tabCountText: 'Nombre d\'onglets actuellement sauvegardés:',
+        cancelBtn: 'Annuler',
+        confirmBtn: 'Confirmer la suppression',
+        deleteSuccess: 'Tous les enregistrements d\'onglets fermés ont été supprimés avec succès'
     },
     de: {
         title: 'Erweiterungsoptionen',
@@ -111,7 +156,16 @@ const languageTexts = {
         navigationPositionTop: 'Oben',
         navigationPositionBottom: 'Unten',
         pageModePagination: 'Seitennavigation',
-        pageModeInfinite: 'Unendliche Scrollung'
+        pageModeInfinite: 'Unendliche Scrollung',
+        dataManagementLabel: 'Datenverwaltung:',
+        clearClosedTabsBtn: 'Alle geschlossenen Tabs löschen',
+        clearClosedTabsHelp: 'Diese Aktion löscht alle gespeicherten Aufzeichnungen geschlossener Tabs, ohne den Browser-Verlauf zu beeinträchtigen.',
+        confirmDeleteTitle: 'Löschen bestätigen',
+        confirmDeleteMessage: 'Sind Sie sicher, dass Sie alle gespeicherten geschlossenen Tabs löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+        tabCountText: 'Anzahl aktuell gespeicherter Tabs:',
+        cancelBtn: 'Abbrechen',
+        confirmBtn: 'Löschen bestätigen',
+        deleteSuccess: 'Alle Aufzeichnungen geschlossener Tabs wurden erfolgreich gelöscht'
     },
     es: {
         title: 'Opciones de la extensión',
@@ -130,7 +184,16 @@ const languageTexts = {
         navigationPositionTop: 'Arriba',
         navigationPositionBottom: 'Abajo',
         pageModePagination: 'Paginado',
-        pageModeInfinite: 'Infinito'
+        pageModeInfinite: 'Infinito',
+        dataManagementLabel: 'Gestión de datos:',
+        clearClosedTabsBtn: 'Eliminar todas las pestañas cerradas',
+        clearClosedTabsHelp: 'Esta operación eliminará todos los registros de pestañas cerradas guardados sin afectar el historial del navegador.',
+        confirmDeleteTitle: 'Confirmar eliminación',
+        confirmDeleteMessage: '¿Está seguro de que desea eliminar todas las pestañas cerradas guardadas? Esta acción no se puede deshacer.',
+        tabCountText: 'Número de pestañas actualmente guardadas:',
+        cancelBtn: 'Cancelar',
+        confirmBtn: 'Confirmar eliminación',
+        deleteSuccess: 'Se eliminaron exitosamente todos los registros de pestañas cerradas'
     }
 };
 
@@ -156,6 +219,17 @@ function updateLanguageTexts(language) {
     document.querySelector('label[for="pageMode"]').textContent = texts.pageModeLabel;
     document.querySelector('option[value="pagination"]').textContent = texts.pageModePagination;
     document.querySelector('option[value="infinite"]').textContent = texts.pageModeInfinite;
+    
+    // 更新数据管理相关文本
+    document.getElementById('dataManagementLabel').textContent = texts.dataManagementLabel;
+    document.getElementById('clearClosedTabsBtn').textContent = texts.clearClosedTabsBtn;
+    document.querySelectorAll('.help-text')[2].textContent = texts.clearClosedTabsHelp;
+    
+    // 更新模态框文本
+    document.getElementById('modalTitle').textContent = texts.confirmDeleteTitle;
+    document.getElementById('modalMessage').textContent = texts.confirmDeleteMessage;
+    document.getElementById('cancelBtn').textContent = texts.cancelBtn;
+    document.getElementById('confirmBtn').textContent = texts.confirmBtn;
 
     // 更新最大记录数的单位显示
     const maxRecentValue = document.getElementById('maxRecent').value;
@@ -408,6 +482,127 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageModeSelect.value = newPageMode;
         }
     });
+
+    // 模态框相关元素
+    const modal = document.getElementById('confirmModal');
+    const clearBtn = document.getElementById('clearClosedTabsBtn');
+    const closeModal = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const tabCount = document.getElementById('tabCount');
+
+    // 更新标签页数量显示
+    async function updateTabCountDisplay() {
+        try {
+            const { closedTabs = [] } = await chrome.storage.local.get(['closedTabs']);
+            const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+            const texts = languageTexts[currentLanguage];
+            tabCount.innerHTML = `${texts.tabCountText} <strong>${closedTabs.length}</strong>`;
+        } catch (error) {
+            console.error('Error updating tab count:', error);
+        }
+    }
+
+    // 打开模态框
+    clearBtn.addEventListener('click', async () => {
+        await updateTabCountDisplay();
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // 防止背景滚动
+    });
+
+    // 关闭模态框的函数
+    function closeModalFunc() {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // 恢复滚动
+    }
+
+    // 关闭模态框事件监听
+    closeModal.addEventListener('click', closeModalFunc);
+    cancelBtn.addEventListener('click', closeModalFunc);
+
+    // 点击模态框外部关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModalFunc();
+        }
+    });
+
+    // ESC键关闭模态框
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeModalFunc();
+        }
+    });
+
+    // 确认删除
+    confirmBtn.addEventListener('click', async () => {
+        try {
+            // 删除所有关闭的标签页记录
+            await chrome.storage.local.set({ closedTabs: [] });
+            
+            // 通知后台脚本更新徽章
+            chrome.runtime.sendMessage({ type: 'updateBadge' }).catch(() => {
+                // 消息发送失败时的后备处理
+                console.log('Failed to send message to background script');
+            });
+
+            // 显示成功消息
+            const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+            const texts = languageTexts[currentLanguage];
+            
+            // 创建成功提示
+            showSuccessMessage(texts.deleteSuccess);
+            
+            closeModalFunc();
+        } catch (error) {
+            console.error('Error clearing closed tabs:', error);
+            alert('删除失败，请重试。');
+        }
+    });
+
+    // 显示成功消息
+    function showSuccessMessage(message) {
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 1001;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: slideInRight 0.3s ease-out;
+        `;
+        successDiv.textContent = message;
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(successDiv);
+        
+        // 3秒后自动移除
+        setTimeout(() => {
+            successDiv.style.animation = 'slideInRight 0.3s ease-out reverse';
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+                if (style.parentNode) {
+                    style.parentNode.removeChild(style);
+                }
+            }, 300);
+        }, 3000);
+    }
 
     applyTheme(savedTheme);
 });

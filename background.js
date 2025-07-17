@@ -241,6 +241,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })();
         return true; // Indicates that the response is sent asynchronously
     }
+    
+    if (message.type === 'updateBadge') {
+        (async () => {
+            try {
+                await updateBadgeCount();
+                sendResponse({ success: true });
+            } catch (error) {
+                console.error('Error updating badge:', error);
+                sendResponse({ success: false, error: error.message });
+            }
+        })();
+        return true; // Indicates that the response is sent asynchronously
+    }
+    
     // 可以添加其他消息类型处理，例如 favicon
 });
 

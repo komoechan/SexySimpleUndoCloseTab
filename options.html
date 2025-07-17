@@ -71,7 +71,35 @@
                 <option value="infinite">瀑布流</option>
             </select>
         </div>
+        <div class="option-group">
+            <label id="dataManagementLabel">数据管理:</label>
+            <div class="data-management">
+                <button id="clearClosedTabsBtn" class="danger-button">清除所有关闭标签页</button>
+                <p class="help-text">此操作将删除所有保存的关闭标签页记录，不影响浏览器历史记录。</p>
+            </div>
+        </div>
     </div>
+
+    <!-- 确认删除模态框 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">确认删除</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">您确定要删除所有已保存的关闭标签页吗？此操作不可撤销。</p>
+                <div class="modal-stats">
+                    <span id="tabCount">当前保存的标签页数量: <strong>0</strong></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelBtn" class="cancel-button">取消</button>
+                <button id="confirmBtn" class="confirm-button">确认删除</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/options.js"></script>
 </body>
 </html>
