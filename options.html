@@ -58,6 +58,32 @@
             <input type="checkbox" id="showTabCount">
         </div>
         <div class="option-group">
+            <label class="setting-label">
+                <span id="clearModeLabel">标签页清理模式:</span>
+            </label>
+            <div class="radio-group">
+                <div class="radio-item">
+                    <input type="radio" id="clearModeNone" name="clearMode" value="none" class="setting-radio">
+                    <label for="clearModeNone" class="radio-label">
+                        <span id="clearModeNoneLabel">不处理</span>
+                    </label>
+                </div>
+                <div class="radio-item">
+                    <input type="radio" id="clearModeIncognito" name="clearMode" value="incognito" class="setting-radio">
+                    <label for="clearModeIncognito" class="radio-label">
+                        <span id="clearModeIncognitoLabel">仅清空无痕浏览标签页</span>
+                    </label>
+                </div>
+                <div class="radio-item">
+                    <input type="radio" id="clearModeAll" name="clearMode" value="all" class="setting-radio">
+                    <label for="clearModeAll" class="radio-label">
+                        <span id="clearModeAllLabel">清空所有标签页</span>
+                    </label>
+                </div>
+            </div>
+            <p class="help-text">选择当关闭无痕窗口或退出浏览器时的处理方式</p>
+        </div>
+        <div class="option-group">
             <label for="navigationPosition">导航位置:</label>
             <select id="navigationPosition">
                 <option value="top">顶部</option>

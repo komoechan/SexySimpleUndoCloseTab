@@ -11,6 +11,11 @@ const languageTexts = {
         popupWidthLabel: '弹窗宽度:',
         popupWidthHelp: '设置弹出窗口的宽度 (300-800像素)',
         showTabCountLabel: '显示标签页数量:',
+        clearModeLabel: '标签页清理模式:',
+        clearModeNone: '不处理',
+        clearModeIncognito: '仅清空无痕浏览标签页',
+        clearModeAll: '清空所有标签页',
+        clearModeHelp: '选择当关闭无痕窗口或退出浏览器时的处理方式',
         navigationPositionLabel: '导航位置:',
         pageModeLabel: '翻页模式:',
         navigationPositionTop: '顶部',
@@ -39,6 +44,11 @@ const languageTexts = {
         popupWidthLabel: 'Popup Width:',
         popupWidthHelp: 'Set the width of the popup window (300-800 pixels)',
         showTabCountLabel: 'Show Tab Count:',
+        clearModeLabel: 'Tab Clear Mode:',
+        clearModeNone: 'Do Nothing',
+        clearModeIncognito: 'Clear Incognito Tabs Only',
+        clearModeAll: 'Clear All Tabs',
+        clearModeHelp: 'Choose how to handle tabs when closing incognito windows or exiting browser',
         navigationPositionLabel: 'Navigation Position:',
         pageModeLabel: 'Page Mode:',
         navigationPositionTop: 'Top',
@@ -67,6 +77,11 @@ const languageTexts = {
         popupWidthLabel: 'ポップアップの幅:',
         popupWidthHelp: 'ポップアップウィンドウの幅を設定 (300-800ピクセル)',
         showTabCountLabel: 'タブ数を表示:',
+        clearModeLabel: 'タブクリアモード:',
+        clearModeNone: '何もしない',
+        clearModeIncognito: 'プライベートタブのみクリア',
+        clearModeAll: 'すべてのタブをクリア',
+        clearModeHelp: 'プライベートウィンドウを閉じるかブラウザを終了する際の処理方法を選択',
         navigationPositionLabel: 'ナビゲーション位置:',
         pageModeLabel: 'ページモード:',
         navigationPositionTop: '上部',
@@ -95,6 +110,11 @@ const languageTexts = {
         popupWidthLabel: '팝업 너비:',
         popupWidthHelp: '팝업 창의 너비 설정 (300-800픽셀)',
         showTabCountLabel: '탭 수 표시:',
+        clearModeLabel: '탭 정리 모드:',
+        clearModeNone: '아무것도 하지 않음',
+        clearModeIncognito: '시크릿 탭만 정리',
+        clearModeAll: '모든 탭 정리',
+        clearModeHelp: '시크릿 창을 닫거나 브라우저를 종료할 때의 처리 방법을 선택',
         navigationPositionLabel: '탐색 위치:',
         pageModeLabel: '페이지 모드:',
         navigationPositionTop: '상단',
@@ -112,17 +132,22 @@ const languageTexts = {
         deleteSuccess: '닫힌 탭 기록이 성공적으로 삭제되었습니다'
     },
     fr: {
-        title: 'Options de l’extension',
+        title: 'Options de l\'extension',
         themeLabel: 'Thème:',
         themeSystem: 'Système',
         themeLight: 'Clair',
         themeDark: 'Sombre',
         languageLabel: '🌐Langue:',
         maxRecentLabel: 'Articles récents max:',
-        maxRecentHelp: 'Définir le nombre maximum d’onglets récemment fermés (1-20000)',
+        maxRecentHelp: 'Définir le nombre maximum d\'onglets récemment fermés (1-20000)',
         popupWidthLabel: 'Largeur de la fenêtre:',
         popupWidthHelp: 'Définir la largeur de la fenêtre contextuelle (300-800 pixels)',
         showTabCountLabel: 'Afficher le nombre d\'onglets:',
+        clearModeLabel: 'Mode de nettoyage des onglets:',
+        clearModeNone: 'Ne rien faire',
+        clearModeIncognito: 'Effacer les onglets privés uniquement',
+        clearModeAll: 'Effacer tous les onglets',
+        clearModeHelp: 'Choisir comment gérer les onglets lors de la fermeture des fenêtres privées ou de la sortie du navigateur',
         navigationPositionLabel: 'Position de navigation:',
         pageModeLabel: 'Mode de pagination:',
         navigationPositionTop: 'Haut',
@@ -151,6 +176,11 @@ const languageTexts = {
         popupWidthLabel: 'Popup-Breite:',
         popupWidthHelp: 'Breite des Popup-Fensters festlegen (300-800 Pixel)',
         showTabCountLabel: 'Tab-Anzahl anzeigen:',
+        clearModeLabel: 'Tab-Löschmodus:',
+        clearModeNone: 'Nichts tun',
+        clearModeIncognito: 'Nur Inkognito-Tabs löschen',
+        clearModeAll: 'Alle Tabs löschen',
+        clearModeHelp: 'Wählen Sie, wie Tabs beim Schließen von Inkognito-Fenstern oder Beenden des Browsers behandelt werden',
         navigationPositionLabel: 'Navigation Position:',
         pageModeLabel: 'Seitenmodus:',
         navigationPositionTop: 'Oben',
@@ -178,7 +208,12 @@ const languageTexts = {
         maxRecentHelp: 'Establecer el número máximo de pestañas cerradas recientemente (1-20000)',
         popupWidthLabel: 'Ancho de la ventana emergente:',
         popupWidthHelp: 'Establecer el ancho de la ventana emergente (300-800 píxeles)',
-        showTabCountLabel: 'Mostrar recuento de pestañas:',
+        showTabCountLabel: 'Mostrar número de pestañas:',
+        clearModeLabel: 'Modo de limpieza de pestañas:',
+        clearModeNone: 'No hacer nada',
+        clearModeIncognito: 'Limpiar solo pestañas de incógnito',
+        clearModeAll: 'Limpiar todas las pestañas',
+        clearModeHelp: 'Elegir cómo manejar las pestañas al cerrar ventanas de incógnito o salir del navegador',
         navigationPositionLabel: 'Posición de navegación:',
         pageModeLabel: 'Modo de paginación:',
         navigationPositionTop: 'Arriba',
@@ -213,17 +248,20 @@ function updateLanguageTexts(language) {
     document.querySelector('label[for="popupWidth"]').textContent = texts.popupWidthLabel;
     document.querySelectorAll('.help-text')[1].textContent = texts.popupWidthHelp;
     document.querySelector('label[for="showTabCount"]').textContent = texts.showTabCountLabel;
+    document.querySelector('#clearModeLabel').textContent = texts.clearModeLabel;
+    document.querySelector('#clearModeNoneLabel').textContent = texts.clearModeNone;
+    document.querySelector('#clearModeIncognitoLabel').textContent = texts.clearModeIncognito;
+    document.querySelector('#clearModeAllLabel').textContent = texts.clearModeAll;
+    document.querySelectorAll('.help-text')[2].textContent = texts.clearModeHelp;
     document.querySelector('label[for="navigationPosition"]').textContent = texts.navigationPositionLabel;
     document.querySelector('option[value="top"]').textContent = texts.navigationPositionTop;
     document.querySelector('option[value="bottom"]').textContent = texts.navigationPositionBottom;
     document.querySelector('label[for="pageMode"]').textContent = texts.pageModeLabel;
     document.querySelector('option[value="pagination"]').textContent = texts.pageModePagination;
     document.querySelector('option[value="infinite"]').textContent = texts.pageModeInfinite;
-    
-    // 更新数据管理相关文本
-    document.getElementById('dataManagementLabel').textContent = texts.dataManagementLabel;
-    document.getElementById('clearClosedTabsBtn').textContent = texts.clearClosedTabsBtn;
-    document.querySelectorAll('.help-text')[2].textContent = texts.clearClosedTabsHelp;
+    document.querySelector('#dataManagementLabel').textContent = texts.dataManagementLabel;
+    document.querySelector('#clearClosedTabsBtn').textContent = texts.clearClosedTabsBtn;
+    document.querySelectorAll('.help-text')[3].textContent = texts.clearClosedTabsHelp;
     
     // 更新模态框文本
     document.getElementById('modalTitle').textContent = texts.confirmDeleteTitle;
@@ -263,11 +301,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const popupWidthTooltip = document.getElementById('popupWidthTooltip');
     const languageSelect = document.getElementById('languageSelect');
     const showTabCountCheckbox = document.getElementById('showTabCount');
+    const clearModeRadios = document.querySelectorAll('input[name="clearMode"]');
     const navigationPositionSelect = document.getElementById('navigationPosition');
     const pageModeSelect = document.getElementById('pageMode');
     
     // 获取保存的设置
-    const { theme: savedTheme = 'system', maxRecent = 100, popupWidth = 500, language: savedLanguage = 'en', showTabCount = true, navigationPosition = 'top', pageMode = 'pagination' } = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language', 'showTabCount', 'navigationPosition', 'pageMode']);
+    const savedSettings = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language', 'showTabCount', 'clearMode', 'navigationPosition', 'pageMode']);
+    
+    // 设置默认值，只有当存储中没有值时才使用默认值
+    const savedTheme = savedSettings.theme !== undefined ? savedSettings.theme : 'system';
+    const maxRecent = savedSettings.maxRecent !== undefined ? savedSettings.maxRecent : 100;
+    const popupWidth = savedSettings.popupWidth !== undefined ? savedSettings.popupWidth : 500;
+    const savedLanguage = savedSettings.language !== undefined ? savedSettings.language : 'zh';
+    const showTabCount = savedSettings.showTabCount !== undefined ? savedSettings.showTabCount : true;
+    const clearMode = savedSettings.clearMode !== undefined ? savedSettings.clearMode : 'none';
+    const navigationPosition = savedSettings.navigationPosition !== undefined ? savedSettings.navigationPosition : 'top';
+    const pageMode = savedSettings.pageMode !== undefined ? savedSettings.pageMode : 'pagination';
     
     // 立即应用主题
     themeSelect.value = savedTheme;
@@ -294,6 +343,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 设置显示标签页数量的值
     showTabCountCheckbox.checked = showTabCount;
 
+    // 设置清理模式的值
+    clearModeRadios.forEach(radio => {
+        if (radio.value === clearMode) {
+            radio.checked = true;
+        }
+    });
+
     // 设置导航位置和页面模式的值
     navigationPositionSelect.value = navigationPosition;
     pageModeSelect.value = pageMode;
@@ -319,7 +375,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     maxRecentSlider.addEventListener('input', async () => {
         const value = Math.round(maxRecentSlider.value * 1000);
         maxRecentInput.value = value;
-        const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+        const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
         const unitText = currentLanguage === 'zh' ? '条' : '';
         maxRecentTooltip.textContent = `${value}${unitText}`;
         updateSliderBackground(maxRecentSlider, maxRecentSlider.value);
@@ -342,7 +398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 maxRecentInput.value = adjustedValue;
                 maxRecentInput.classList.remove('error');
                 maxRecentSlider.value = adjustedValue / 1000;
-                const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+                const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
                 const unitText = currentLanguage === 'zh' ? '条' : '';
                 maxRecentTooltip.textContent = `${adjustedValue}${unitText}`;
                 updateSliderBackground(maxRecentSlider, maxRecentSlider.value);
@@ -359,7 +415,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         maxRecentInput.value = value;
         maxRecentInput.classList.remove('error');
         maxRecentSlider.value = value / 1000;
-        const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+        const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
         const unitText = currentLanguage === 'zh' ? '条' : '';
         maxRecentTooltip.textContent = `${value}${unitText}`;
         updateSliderBackground(maxRecentSlider, maxRecentSlider.value);
@@ -370,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     popupWidthSlider.addEventListener('input', async () => {
         const value = Math.round(300 + popupWidthSlider.value * 31.25);
         popupWidthInput.value = value;
-        const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+        const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
         const pixelText = currentLanguage === 'zh' ? '像素' : 'px';
         popupWidthTooltip.textContent = `${value}${pixelText}`;
         updateSliderBackground(popupWidthSlider, popupWidthSlider.value);
@@ -393,7 +449,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 popupWidthInput.value = adjustedValue;
                 popupWidthInput.classList.remove('error');
                 popupWidthSlider.value = Math.round((adjustedValue - 300) / 31.25);
-                const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+                const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
                 const pixelText = currentLanguage === 'zh' ? '像素' : 'px';
                 popupWidthTooltip.textContent = `${adjustedValue}${pixelText}`;
                 updateSliderBackground(popupWidthSlider, popupWidthSlider.value);
@@ -410,7 +466,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         popupWidthInput.value = value;
         popupWidthInput.classList.remove('error');
         popupWidthSlider.value = Math.round((value - 300) / 31.25);
-        const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+        const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
         const pixelText = currentLanguage === 'zh' ? '像素' : 'px';
         popupWidthTooltip.textContent = `${value}${pixelText}`;
         updateSliderBackground(popupWidthSlider, popupWidthSlider.value);
@@ -434,6 +490,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 显示标签页数量选择事件监听
     showTabCountCheckbox.addEventListener('change', async () => {
         await chrome.storage.sync.set({ showTabCount: showTabCountCheckbox.checked });
+    });
+
+    // 清理模式选择事件监听
+    clearModeRadios.forEach(radio => {
+        radio.addEventListener('change', async () => {
+            if (radio.checked) {
+                await chrome.storage.sync.set({ clearMode: radio.value });
+            }
+        });
     });
 
     // 导航位置选择事件监听
@@ -481,6 +546,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const newPageMode = changes.pageMode.newValue;
             pageModeSelect.value = newPageMode;
         }
+        if (namespace === 'sync' && changes.clearMode) {
+            const newClearMode = changes.clearMode.newValue;
+            clearModeRadios.forEach(radio => {
+                radio.checked = radio.value === newClearMode;
+            });
+        }
     });
 
     // 模态框相关元素
@@ -494,10 +565,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 更新标签页数量显示
     async function updateTabCountDisplay() {
         try {
-            const { closedTabs = [] } = await chrome.storage.local.get(['closedTabs']);
-            const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+            const { closedTabs = [], incognitoClosedTabs = [] } = await chrome.storage.local.get(['closedTabs', 'incognitoClosedTabs']);
+            const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
             const texts = languageTexts[currentLanguage];
-            tabCount.innerHTML = `${texts.tabCountText} <strong>${closedTabs.length}</strong>`;
+            const totalCount = closedTabs.length + incognitoClosedTabs.length;
+            tabCount.innerHTML = `${texts.tabCountText} <strong>${totalCount}</strong> (普通: ${closedTabs.length}, 无痕: ${incognitoClosedTabs.length})`;
         } catch (error) {
             console.error('Error updating tab count:', error);
         }
@@ -537,8 +609,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 确认删除
     confirmBtn.addEventListener('click', async () => {
         try {
-            // 删除所有关闭的标签页记录
-            await chrome.storage.local.set({ closedTabs: [] });
+            // 删除所有关闭的标签页记录（包括普通和无痕）
+            await chrome.storage.local.set({ closedTabs: [], incognitoClosedTabs: [] });
             
             // 通知后台脚本更新徽章
             chrome.runtime.sendMessage({ type: 'updateBadge' }).catch(() => {
@@ -547,9 +619,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             // 显示成功消息
-            const { language: currentLanguage = 'en' } = await chrome.storage.sync.get('language');
+            const { language: currentLanguage = 'zh' } = await chrome.storage.sync.get('language');
             const texts = languageTexts[currentLanguage];
-            
+            showSuccessMessage(texts.clearSuccess);
             // 创建成功提示
             showSuccessMessage(texts.deleteSuccess);
             

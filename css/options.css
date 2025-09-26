@@ -27,19 +27,19 @@ body {
     transition: background-color 0.3s, color 0.3s;
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
+    align-items: flex-start;
+    min-height: 100vh;
 }
 
 .container {
+    background-color: var(--container-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 30px;
     width: 100%;
     max-width: 600px;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    background-color: var(--background-color);
-    margin: 0 auto;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    border: 1px solid var(--border-color);
 }
 
 h1 {
@@ -560,4 +560,97 @@ select:focus {
 
 [data-theme='dark'] .confirm-button:hover {
     background-color: #b85565;
+}
+
+/* 单选按钮组样式 */
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.radio-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.radio-item:hover {
+    background-color: var(--hover-color);
+}
+
+.setting-radio {
+    margin: 0 12px 0 0;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    background-color: var(--background-color);
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.2s, background-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.setting-radio:checked {
+    border-color: #0366d6;
+    background-color: #0366d6;
+}
+
+.setting-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.setting-radio:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.2);
+}
+
+.radio-label {
+    flex: 1;
+    margin: 0;
+    font-size: 14px;
+    font-weight: normal;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.radio-label span {
+    display: block;
+}
+
+/* 深色主题下的单选按钮样式 */
+[data-theme='dark'] .setting-radio:checked {
+    border-color: #bb86fc;
+    background-color: #bb86fc;
+}
+
+[data-theme='dark'] .setting-radio:focus {
+    box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.2);
+}
+
+/* 自动深色主题适配 */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .setting-radio:checked {
+        border-color: #bb86fc;
+        background-color: #bb86fc;
+    }
+
+    :root:not([data-theme='light']) .setting-radio:focus {
+        box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.2);
+    }
 }

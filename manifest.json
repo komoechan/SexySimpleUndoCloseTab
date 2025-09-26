@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.5",
+  "version": "1.6",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
     "tabs",
     "history",
     "storage",
-    "favicon"
+    "favicon",
+    "windows"
   ],
   "host_permissions": ["*://*/*"],
   "action": {
