@@ -341,6 +341,38 @@ body {
     background: #c82333;
 }
 
+/* 复制按钮样式 */
+.copy-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 40px; /* 再往左，避免被删除按钮遮挡 */
+    width: 24px; /* 缩小宽度以显得更精致 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px; /* 缩小字号，避免显得过大 */
+    color: #999; /* 淡灰色，兼容浅色/深色 */
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 2; /* 确保在 hover 时不被覆盖 */
+}
+
+.history-item:hover .copy-button {
+    opacity: 1;
+}
+
+.copy-button .material-icons {
+    font-size: 16px; /* 图标略小，更协调 */
+    line-height: 1;
+    color: #999;
+}
+
+.copy-button:hover {
+    color: #666;
+}
+
 /* Add restore button styles */
 /* 移除 restore-button 相关样式 */
 
@@ -446,6 +478,18 @@ body {
 
     .delete-button:hover {
         background-color: #b00020;
+    }
+
+    .copy-button {
+        color: #bbbbbb;
+    }
+
+    .copy-button .material-icons {
+        color: #bbbbbb;
+    }
+
+    .copy-button:hover {
+        color: #eeeeee;
     }
 
     .highlight {

@@ -102,6 +102,63 @@ const itemsPerPage = 20;
 let isInfiniteScrollMode = false; // 添加一个标志来追踪当前是否为瀑布流模式
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // 非扩展环境安全回退：当 chrome API 不可用时，提供空对象和简易实现
+    const isExtensionEnv = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync;
+    if (!isExtensionEnv) {
+        window.chrome = window.chrome || {};
+        chrome.storage = chrome.storage || {
+            sync: {
+                get: async (defaults) => ({
+                    language: 'en',
+                    theme: 'light',
+                    popupWidth: 500,
+                    navigationPosition: 'top',
+                    pageMode: 'pagination',
+                    ...defaults
+                })
+            },
+            local: {
+                get: (keys, cb) => cb({ closedTabs: [] }),
+                set: (obj, cb) => cb && cb()
+            }
+        };
+        chrome.runtime = chrome.runtime || {
+            sendMessage: (msg, cb) => {
+                // 提供最近关闭的示例数据
+                const sampleTabs = Array.from({ length: 8 }).map((_, i) => ({
+                    id: i + 1,
+                    url: `https://example.com/page-${i + 1}`,
+                    title: `Example Page ${i + 1}`,
+                    favicon: '',
+                    closedAt: Date.now() - (i * 3600 * 1000)
+                }));
+                cb && cb({ tabs: sampleTabs, totalCount: sampleTabs.length });
+            },
+            lastError: null
+        };
+        chrome.tabs = chrome.tabs || {
+            create: ({ url }) => {
+                console.log('Open tab (mock):', url);
+            }
+        };
+        chrome.history = chrome.history || {
+            search: ({}, cb) => {
+                // 提供历史记录示例数据
+                const sampleHistory = Array.from({ length: 20 }).map((_, i) => ({
+                    id: i + 101,
+                    url: `https://news.example.com/article-${i + 1}`,
+                    title: `Sample Article ${i + 1}`,
+                    lastVisitTime: Date.now() - (i * 7200 * 1000)
+                }));
+                cb && cb(sampleHistory);
+            },
+            deleteUrl: ({ url }, cb) => {
+                console.log('Delete history url (mock):', url);
+                cb && cb();
+            }
+        };
+        chrome.storage.onChanged = { addListener: () => {} };
+    }
     // 1. 立即初始化 DOM 缓存和基本 UI
     initDOMCache();
     
@@ -641,10 +698,69 @@ function appendHistoryItems() {
             });
         });
 
+        // 复制链接按钮
+        const copyButton = document.createElement('span');
+        copyButton.className = 'copy-button';
+        copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        let copyResetTimer = null;
+        copyButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const setCopied = () => {
+                copyButton.textContent = '✓';
+                if (copyResetTimer) clearTimeout(copyResetTimer);
+                copyResetTimer = setTimeout(() => {
+                    copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+                }, 1200);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(item.url).then(setCopied).catch(() => {
+                    try {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = item.url;
+                        textarea.style.position = 'fixed';
+                        textarea.style.top = '-9999px';
+                        document.body.appendChild(textarea);
+                        textarea.focus();
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        setCopied();
+                    } catch (err) {
+                        console.error('Copy failed', err);
+                    }
+                });
+            } else {
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = item.url;
+                    textarea.style.position = 'fixed';
+                    textarea.style.top = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    setCopied();
+                } catch (err) {
+                    console.error('Copy failed', err);
+                }
+            }
+        });
+
+        div.addEventListener('mouseleave', () => {
+            if (copyResetTimer) {
+                clearTimeout(copyResetTimer);
+                copyResetTimer = null;
+            }
+            copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        });
+
         div.appendChild(favicon);
         linkContainer.appendChild(link);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
+        div.appendChild(copyButton);
         div.appendChild(deleteButton);
         historyList.appendChild(div);
 
@@ -836,6 +952,64 @@ function appendClosedTabs(newItems) {
             });
         });
 
+        // 复制链接按钮
+        const copyButton = document.createElement('span');
+        copyButton.className = 'copy-button';
+        copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        let copyResetTimer = null;
+        copyButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const setCopied = () => {
+                copyButton.textContent = '✓';
+                if (copyResetTimer) clearTimeout(copyResetTimer);
+                copyResetTimer = setTimeout(() => {
+                    copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+                }, 1200);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(tab.url).then(setCopied).catch(() => {
+                    try {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = tab.url;
+                        textarea.style.position = 'fixed';
+                        textarea.style.top = '-9999px';
+                        document.body.appendChild(textarea);
+                        textarea.focus();
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        setCopied();
+                    } catch (err) {
+                        console.error('Copy failed', err);
+                    }
+                });
+            } else {
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = tab.url;
+                    textarea.style.position = 'fixed';
+                    textarea.style.top = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    setCopied();
+                } catch (err) {
+                    console.error('Copy failed', err);
+                }
+            }
+        });
+
+        div.addEventListener('mouseleave', () => {
+            if (copyResetTimer) {
+                clearTimeout(copyResetTimer);
+                copyResetTimer = null;
+            }
+            copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        });
+
         let isMouseMove = false;
         
         link.addEventListener('mousedown', (e) => {
@@ -869,6 +1043,7 @@ function appendClosedTabs(newItems) {
         linkContainer.appendChild(link);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
+        div.appendChild(copyButton);
         div.appendChild(deleteButton);
         closedTabsList.appendChild(div);
 
@@ -965,6 +1140,64 @@ function displayClosedTabs(pageItems) {
             });
         });
 
+        // 复制链接按钮
+        const copyButton = document.createElement('span');
+        copyButton.className = 'copy-button';
+        copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        let copyResetTimer = null;
+        copyButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const setCopied = () => {
+                copyButton.textContent = '✓';
+                if (copyResetTimer) clearTimeout(copyResetTimer);
+                copyResetTimer = setTimeout(() => {
+                    copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+                }, 1200);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(tab.url).then(setCopied).catch(() => {
+                    try {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = tab.url;
+                        textarea.style.position = 'fixed';
+                        textarea.style.top = '-9999px';
+                        document.body.appendChild(textarea);
+                        textarea.focus();
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        setCopied();
+                    } catch (err) {
+                        console.error('Copy failed', err);
+                    }
+                });
+            } else {
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = tab.url;
+                    textarea.style.position = 'fixed';
+                    textarea.style.top = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    setCopied();
+                } catch (err) {
+                    console.error('Copy failed', err);
+                }
+            }
+        });
+
+        div.addEventListener('mouseleave', () => {
+            if (copyResetTimer) {
+                clearTimeout(copyResetTimer);
+                copyResetTimer = null;
+            }
+            copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        });
+
         let isMouseMove = false;
         
         link.addEventListener('mousedown', (e) => {
@@ -998,6 +1231,7 @@ function displayClosedTabs(pageItems) {
         linkContainer.appendChild(link);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
+        div.appendChild(copyButton);
         div.appendChild(deleteButton);
         closedTabsList.appendChild(div);
 
@@ -1084,10 +1318,21 @@ function getRelativeTimeString(timestamp) {
 }
 
 function faviconURL(websiteUrl) {
-    const url = new URL(chrome.runtime.getURL("/_favicon/"));
-    url.searchParams.set("pageUrl", websiteUrl);
-    url.searchParams.set("size", "16");
-    return url.toString();
+    try {
+        if (window.chrome && chrome.runtime && typeof chrome.runtime.getURL === 'function') {
+            const url = new URL(chrome.runtime.getURL("/_favicon/"));
+            url.searchParams.set("pageUrl", websiteUrl);
+            url.searchParams.set("size", "16");
+            return url.toString();
+        }
+    } catch (e) {
+        // ignore and fallback
+    }
+    // 非扩展环境下使用 Google S2 favicon 服务
+    const s2 = new URL("https://www.google.com/s2/favicons");
+    s2.searchParams.set("sz", "16");
+    s2.searchParams.set("domain_url", websiteUrl);
+    return s2.toString();
 }
 
 function displayHistoryItems() {
@@ -1137,11 +1382,70 @@ function displayHistoryItems() {
             });
         });
 
+        // 复制链接按钮（历史项）
+        const copyButton = document.createElement('span');
+        copyButton.className = 'copy-button';
+        copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        let copyResetTimer = null;
+        copyButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const setCopied = () => {
+                copyButton.textContent = '✓';
+                if (copyResetTimer) clearTimeout(copyResetTimer);
+                copyResetTimer = setTimeout(() => {
+                    copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+                }, 1200);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(item.url).then(setCopied).catch(() => {
+                    try {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = item.url;
+                        textarea.style.position = 'fixed';
+                        textarea.style.top = '-9999px';
+                        document.body.appendChild(textarea);
+                        textarea.focus();
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        setCopied();
+                    } catch (err) {
+                        console.error('Copy failed', err);
+                    }
+                });
+            } else {
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = item.url;
+                    textarea.style.position = 'fixed';
+                    textarea.style.top = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    setCopied();
+                } catch (err) {
+                    console.error('Copy failed', err);
+                }
+            }
+        });
+
+        div.addEventListener('mouseleave', () => {
+            if (copyResetTimer) {
+                clearTimeout(copyResetTimer);
+                copyResetTimer = null;
+            }
+            copyButton.innerHTML = '<span class="material-icons">content_copy</span>';
+        });
+
         // 修改添加顺序
         div.appendChild(favicon);
         linkContainer.appendChild(link);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
+        div.appendChild(copyButton);
         div.appendChild(deleteButton);
         historyList.appendChild(div);
 
