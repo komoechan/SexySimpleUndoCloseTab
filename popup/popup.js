@@ -168,7 +168,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         theme: 'system',
         popupWidth: 500,
         navigationPosition: 'top',
-        pageMode: 'pagination'
+        pageMode: 'pagination',
+        showUrl: true
     });
 
     // 3. 先设置基本的交互能力
@@ -265,6 +266,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 重新应用页面模式设置
                 location.reload(); // 简单重载以应用新的页面模式
             }
+            if (changes.showUrl) {
+                globalConfig.showUrl = changes.showUrl.newValue;
+                const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+                if (activeTab === 'closed-tabs') {
+                    loadClosedTabs();
+                } else if (activeTab === 'history') {
+                    loadHistoryItems();
+                }
+            }
         }
     });
 
@@ -344,38 +354,55 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function updateTabCounts(totalCountForTab, tabDataType) {
     const query = domCache.globalSearch.value.trim();
-    tabButtons.forEach(button => {
-        const countSpan = button.querySelector('.count');
-        if (countSpan) {
-            countSpan.remove();
-        }
 
-        let count = 0;
-        const dataType = button.dataset.tab;
+    // 清空搜索时移除所有计数
+    if (!query) {
+        document.querySelectorAll('.tab-button .count').forEach(el => el.remove());
+        return;
+    }
 
-        if (query) { // 只有在搜索时才显示计数
-            if (tabDataType && dataType === tabDataType) {
-                count = totalCountForTab;
-            } else if (dataType === 'history') {
-                // 当更新 closed-tabs 的计数时，history 的计数需要保持 (如果已计算)
-                // 这里 currentHistoryItems 可能不是最新的，如果依赖 background.js, 需要相应调整
-                // 暂时维持现有逻辑，后续统一到 background.js 获取所有计数
-                count = currentHistoryItems.length; 
-            } else if (dataType === 'closed-tabs') {
-                // 当更新 history 的计数时，closed-tabs 的计数需要保持
-                // count = currentClosedTabs.length; // currentClosedTabs 现在只是一页数据，不能这样用
-                // 这个也需要 background.js 返回总数
-                // 暂时注释掉，依赖于调用时传入的 totalCountForTab
-            }
-
+    // 如果指定了要更新的标签类型，仅更新该标签的计数，避免闪烁
+    if (tabDataType) {
+        const targetButton = Array.from(tabButtons).find(b => b.dataset.tab === tabDataType);
+        if (targetButton) {
+            const countSpan = targetButton.querySelector('.count');
+            if (countSpan) countSpan.remove();
+            const count = Number(totalCountForTab) || 0;
             if (count > 0) {
                 const newCountSpan = document.createElement('span');
                 newCountSpan.className = 'count';
                 newCountSpan.textContent = formatCount(count);
-                button.appendChild(newCountSpan);
+                targetButton.appendChild(newCountSpan);
             }
         }
-    });
+        return;
+    }
+
+    // 未指定具体类型时，同时尝试更新两个标签（如有数据）
+    const historyButton = Array.from(tabButtons).find(b => b.dataset.tab === 'history');
+    const closedButton = Array.from(tabButtons).find(b => b.dataset.tab === 'closed-tabs');
+    if (historyButton) {
+        const span = historyButton.querySelector('.count');
+        if (span) span.remove();
+        const hCount = currentHistoryItems.length || 0;
+        if (hCount > 0) {
+            const s = document.createElement('span');
+            s.className = 'count';
+            s.textContent = formatCount(hCount);
+            historyButton.appendChild(s);
+        }
+    }
+    if (closedButton) {
+        const span = closedButton.querySelector('.count');
+        if (span) span.remove();
+        const cCount = (typeof totalCountForTab === 'number' ? totalCountForTab : (currentClosedTabs ? currentClosedTabs.length : 0)) || 0;
+        if (cCount > 0) {
+            const s = document.createElement('span');
+            s.className = 'count';
+            s.textContent = formatCount(cCount);
+            closedButton.appendChild(s);
+        }
+    }
 }
 
 const formatCount = (count) => count > 99 ? '99+' : count;
@@ -402,7 +429,7 @@ function handleSearchInput() {
                     tab.title.toLowerCase().includes(query) || 
                     tab.url.toLowerCase().includes(query)
                 );
-                updateTabCounts();
+                updateTabCounts(currentClosedTabs.length, 'closed-tabs');
             });
         }
     } else {
@@ -464,7 +491,7 @@ async function handleTabClick(event) {
                         tab.url.toLowerCase().includes(query)
                     );
                 }
-                updateTabCounts();
+                updateTabCounts(currentClosedTabs.length, 'closed-tabs');
             });
         }
     } else {
@@ -579,7 +606,7 @@ function loadHistoryItems(append = false) {
     const maxResults = query ? 
         2147483647 : // 搜索时使用全量数据
         (isInfiniteScrollMode ? 
-            Math.min(currentPage * itemsPerPage * 2, 10000) : // 无限滚动时适当增加缓冲
+            Math.min(currentPage * itemsPerPage + 40, 10000) : // 无限滚动时仅比当前已加载多预取40条
             Math.min(currentPage * itemsPerPage * 5, 5000));   // 分页模式下预加载更多页面
     
     chrome.history.search({
@@ -648,6 +675,8 @@ function createLoadingIndicator() {
 // 修改appendHistoryItems函数，使用新的createLoadingIndicator函数
 function appendHistoryItems() {
     const historyList = domCache.historyList;
+    const searchQuery = domCache.globalSearch.value.trim();
+    const keywords = searchQuery ? searchQuery.split(/\s+/).filter(Boolean) : [];
     
     // 计算当前页的起始和结束索引
     const start = (currentPage - 1) * itemsPerPage;
@@ -682,7 +711,17 @@ function appendHistoryItems() {
 
         const link = document.createElement('span');
         link.className = 'history-link';
-        link.textContent = item.title || item.url;
+        link.innerHTML = highlightText(item.title || item.url, keywords);
+
+        const textContainer = document.createElement('div');
+        textContainer.className = 'text-container';
+        textContainer.appendChild(link);
+        if (globalConfig.showUrl) {
+            const urlText = document.createElement('span');
+            urlText.className = 'url-text';
+            urlText.innerHTML = highlightText(item.url, keywords);
+            textContainer.appendChild(urlText);
+        }
 
         const time = document.createElement('span');
         time.className = 'visit-time';
@@ -757,7 +796,7 @@ function appendHistoryItems() {
         });
 
         div.appendChild(favicon);
-        linkContainer.appendChild(link);
+        linkContainer.appendChild(textContainer);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
         div.appendChild(copyButton);
@@ -867,6 +906,19 @@ function loadClosedTabs(append = false) {
                 return;
             }
             
+            // 如果当前页超过总页数，进行页码钳制并重新加载，以避免页面清空
+            try {
+                const totalPages = response.totalCount > 0 ? Math.ceil(response.totalCount / itemsPerPage) : 1;
+                if (currentPage > totalPages) {
+                    currentPage = totalPages;
+                    // 重新加载并退出当前回调，避免显示空列表
+                    loadClosedTabs(false);
+                    return;
+                }
+            } catch (e) {
+                console.warn('Failed to clamp page after deletion:', e);
+            }
+            
             // currentClosedTabs = response.tabs; // currentClosedTabs现在只代表当前页的项目，这会影响瀑布流的长度判断
                                          // 因此，瀑布流的长度判断需要依赖 totalCount
 
@@ -892,6 +944,8 @@ function loadClosedTabs(append = false) {
 // 修改appendClosedTabs函数，使其接受要追加的项目，并根据总数判断是否继续显示加载指示器
 function appendClosedTabs(newItems) {
     const closedTabsList = domCache.closedTabsList;
+    const searchQuery = domCache.globalSearch.value.trim();
+    const keywords = searchQuery ? searchQuery.split(/\s+/).filter(Boolean) : [];
     
     // 如果没有更多项目可加载，则不执行任何操作
     if (!newItems || newItems.length === 0) {
@@ -932,7 +986,17 @@ function appendClosedTabs(newItems) {
 
         const link = document.createElement('span');
         link.className = 'history-link';
-        link.textContent = tab.title || tab.url;
+        link.innerHTML = highlightText(tab.title || tab.url, keywords);
+
+        const textContainer = document.createElement('div');
+        textContainer.className = 'text-container';
+        textContainer.appendChild(link);
+        if (globalConfig.showUrl) {
+            const urlText = document.createElement('span');
+            urlText.className = 'url-text';
+            urlText.innerHTML = highlightText(tab.url, keywords);
+            textContainer.appendChild(urlText);
+        }
 
         const time = document.createElement('span');
         time.className = 'visit-time';
@@ -943,10 +1007,15 @@ function appendClosedTabs(newItems) {
         deleteButton.innerHTML = '×';
         deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
-            chrome.storage.local.get(['closedTabs'], (result) => {
-                const closedTabs = result.closedTabs || [];
-                const updatedClosedTabs = closedTabs.filter(t => t.id !== tab.id);
-                chrome.storage.local.set({ closedTabs: updatedClosedTabs }, () => {
+            // 根据来源删除普通或无痕记录
+            chrome.storage.local.get(['closedTabs', 'incognitoClosedTabs'], (result) => {
+                const key = tab.source === 'incognito' ? 'incognitoClosedTabs' : 'closedTabs';
+                const targetArray = result[key] || [];
+                const updated = targetArray.filter(t => t.id !== tab.id);
+                chrome.storage.local.set({ [key]: updated }, () => {
+                    // 更新徽章计数（可选）
+                    try { chrome.runtime.sendMessage({ type: 'updateBadge' }, () => {}); } catch (_) {}
+                    // 重新加载列表，页码将由 loadClosedTabs 内部钳制
                     loadClosedTabs();
                 });
             });
@@ -1040,7 +1109,7 @@ function appendClosedTabs(newItems) {
         });
 
         div.appendChild(favicon);
-        linkContainer.appendChild(link);
+        linkContainer.appendChild(textContainer);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
         div.appendChild(copyButton);
@@ -1091,6 +1160,8 @@ function appendClosedTabs(newItems) {
 function displayClosedTabs(pageItems) {
     const closedTabsList = domCache.closedTabsList;
     closedTabsList.innerHTML = '';
+    const searchQuery = domCache.globalSearch.value.trim();
+    const keywords = searchQuery ? searchQuery.split(/\s+/).filter(Boolean) : [];
     
     // 只有在非瀑布流模式下才重置滚动位置
     if (!isInfiniteScrollMode) {
@@ -1120,7 +1191,17 @@ function displayClosedTabs(pageItems) {
 
         const link = document.createElement('span');
         link.className = 'history-link';
-        link.textContent = tab.title || tab.url;
+        link.innerHTML = highlightText(tab.title || tab.url, keywords);
+
+        const textContainer = document.createElement('div');
+        textContainer.className = 'text-container';
+        textContainer.appendChild(link);
+        if (globalConfig.showUrl) {
+            const urlText = document.createElement('span');
+            urlText.className = 'url-text';
+            urlText.innerHTML = highlightText(tab.url, keywords);
+            textContainer.appendChild(urlText);
+        }
 
         const time = document.createElement('span');
         time.className = 'visit-time';
@@ -1228,7 +1309,7 @@ function displayClosedTabs(pageItems) {
         });
 
         div.appendChild(favicon);
-        linkContainer.appendChild(link);
+        linkContainer.appendChild(textContainer);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
         div.appendChild(copyButton);
@@ -1278,11 +1359,40 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function escapeHTML(str) {
+    return str.replace(/[&<>"']/g, (ch) => {
+        switch (ch) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case '\'': return '&#39;';
+            default: return ch;
+        }
+    });
+}
+
 function highlightText(text, keywords) {
-    if (!keywords.length) return text;
+    // 安全地转义并高亮匹配关键字，避免插入未转义HTML
+    if (!keywords.length) return escapeHTML(text);
     const escapedKeywords = keywords.map(escapeRegExp);
-    const regex = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
-    return text.replace(regex, '<span class="highlight">$1</span>');
+    const regex = new RegExp(escapedKeywords.join('|'), 'gi');
+    let result = '';
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+        const start = match.index;
+        const end = start + match[0].length;
+        result += escapeHTML(text.slice(lastIndex, start));
+        result += '<span class="highlight">' + escapeHTML(text.slice(start, end)) + '</span>';
+        lastIndex = end;
+        // 防止零宽匹配导致死循环
+        if (regex.lastIndex === match.index) {
+            regex.lastIndex++;
+        }
+    }
+    result += escapeHTML(text.slice(lastIndex));
+    return result;
 }
 
 function getRelativeTimeString(timestamp) {
@@ -1338,6 +1448,7 @@ function faviconURL(websiteUrl) {
 function displayHistoryItems() {
     const historyList = domCache.historyList;
     const searchQuery = domCache.globalSearch.value.trim();
+    const keywords = searchQuery ? searchQuery.split(/\s+/).filter(Boolean) : [];
     historyList.innerHTML = '';
     
     // 只有在非瀑布流模式下才重置滚动位置
@@ -1366,7 +1477,18 @@ function displayHistoryItems() {
 
         const link = document.createElement('span'); // 修改为span
         link.className = 'history-link'; // 添加class以便于样式控制
-        link.textContent = item.title || item.url;
+        link.innerHTML = highlightText(item.title || item.url, keywords);
+
+        const textContainer = document.createElement('div');
+        textContainer.className = 'text-container';
+        textContainer.appendChild(link);
+
+        if (globalConfig.showUrl) {
+            const urlText = document.createElement('span');
+            urlText.className = 'url-text';
+            urlText.innerHTML = highlightText(item.url, keywords);
+            textContainer.appendChild(urlText);
+        }
 
         const time = document.createElement('span');
         time.className = 'visit-time';
@@ -1442,7 +1564,7 @@ function displayHistoryItems() {
 
         // 修改添加顺序
         div.appendChild(favicon);
-        linkContainer.appendChild(link);
+        linkContainer.appendChild(textContainer);
         linkContainer.appendChild(time);
         div.appendChild(linkContainer);
         div.appendChild(copyButton);

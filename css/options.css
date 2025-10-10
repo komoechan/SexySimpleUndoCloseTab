@@ -65,6 +65,20 @@ label {
     font-weight: 500;
 }
 
+/* 单个复选框的内联布局 */
+.option-group.single-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.option-group.single-inline label {
+    display: inline-block;
+    margin: 0;
+}
+.option-group.single-inline input[type="checkbox"] {
+    margin: 0;
+}
+
 select {
     width: 100%;
     padding: 8px 12px;

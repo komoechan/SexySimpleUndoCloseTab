@@ -11,6 +11,7 @@ const languageTexts = {
         popupWidthLabel: '弹窗宽度:',
         popupWidthHelp: '设置弹出窗口的宽度 (300-800像素)',
         showTabCountLabel: '显示标签页数量:',
+        showUrlLabel: '显示对应URL:',
         clearModeLabel: '标签页清理模式:',
         clearModeNone: '不处理',
         clearModeIncognito: '仅清空无痕浏览标签页',
@@ -30,7 +31,13 @@ const languageTexts = {
         tabCountText: '当前保存的标签页数量:',
         cancelBtn: '取消',
         confirmBtn: '确认删除',
-        deleteSuccess: '已成功删除所有关闭标签页记录'
+        deleteSuccess: '已成功删除所有关闭标签页记录',
+        shortcutLabel: '快捷键: 打开最近关闭的标签页',
+        shortcutHelp: '默认快捷键：Windows/Linux 为 Ctrl+Shift+Z，Mac 为 Cmd+Shift+Z。您可以点击下方按钮进入浏览器的扩展快捷键设置页面进行修改。',
+        shortcutSupportNote: '请注意该功能不一定支持所有的浏览器。',
+        openShortcutSettingsBtn: '打开浏览器快捷键设置',
+        resetShortcutBtn: '重置为默认',
+        shortcutResetInfo: '请在打开的“扩展快捷键”页面中将命令重置为默认，或手动设置为您喜欢的按键组合。'
     },
     en: {
         title: 'Extension Options',
@@ -44,6 +51,7 @@ const languageTexts = {
         popupWidthLabel: 'Popup Width:',
         popupWidthHelp: 'Set the width of the popup window (300-800 pixels)',
         showTabCountLabel: 'Show Tab Count:',
+        showUrlLabel: 'Show URL:',
         clearModeLabel: 'Tab Clear Mode:',
         clearModeNone: 'Do Nothing',
         clearModeIncognito: 'Clear Incognito Tabs Only',
@@ -63,7 +71,13 @@ const languageTexts = {
         tabCountText: 'Current saved tabs count:',
         cancelBtn: 'Cancel',
         confirmBtn: 'Confirm Delete',
-        deleteSuccess: 'Successfully deleted all closed tab records'
+        deleteSuccess: 'Successfully deleted all closed tab records',
+        shortcutLabel: 'Shortcut: Open Most Recently Closed Tab',
+        shortcutHelp: 'Default: Ctrl+Shift+Z on Windows/Linux, Cmd+Shift+Z on Mac. Click below to open the browser’s extension shortcut settings to change it.',
+        shortcutSupportNote: 'Please note that this feature may not support all browsers.',
+        openShortcutSettingsBtn: 'Open Browser Shortcut Settings',
+        resetShortcutBtn: 'Reset to Default',
+        shortcutResetInfo: 'Use the “Extension Shortcuts” page to reset to default or set your preferred key combination.'
     },
     ja: {
         title: '拡張機能の設定',
@@ -77,6 +91,7 @@ const languageTexts = {
         popupWidthLabel: 'ポップアップの幅:',
         popupWidthHelp: 'ポップアップウィンドウの幅を設定 (300-800ピクセル)',
         showTabCountLabel: 'タブ数を表示:',
+        showUrlLabel: 'URL を表示:',
         clearModeLabel: 'タブクリアモード:',
         clearModeNone: '何もしない',
         clearModeIncognito: 'プライベートタブのみクリア',
@@ -96,7 +111,13 @@ const languageTexts = {
         tabCountText: '現在保存されているタブ数:',
         cancelBtn: 'キャンセル',
         confirmBtn: '削除確認',
-        deleteSuccess: '閉じたタブの記録を正常に削除しました'
+        deleteSuccess: '閉じたタブの記録を正常に削除しました',
+        shortcutLabel: 'ショートカット: 最近閉じたタブを開く',
+        shortcutHelp: '既定: Windows/Linux は Ctrl+Shift+Z、Mac は Cmd+Shift+Z。下のボタンをクリックしてブラウザの拡張機能ショートカット設定ページを開き、変更できます。',
+        shortcutSupportNote: 'この機能はすべてのブラウザでサポートされない場合があります。',
+        openShortcutSettingsBtn: 'ブラウザのショートカット設定を開く',
+        resetShortcutBtn: 'デフォルトにリセット',
+        shortcutResetInfo: '「拡張機能のショートカット」ページでデフォルトに戻すか、お好みのキーに設定してください。'
     },
     ko: {
         title: '확장 설정',
@@ -110,6 +131,7 @@ const languageTexts = {
         popupWidthLabel: '팝업 너비:',
         popupWidthHelp: '팝업 창의 너비 설정 (300-800픽셀)',
         showTabCountLabel: '탭 수 표시:',
+        showUrlLabel: 'URL 표시:',
         clearModeLabel: '탭 정리 모드:',
         clearModeNone: '아무것도 하지 않음',
         clearModeIncognito: '시크릿 탭만 정리',
@@ -129,7 +151,13 @@ const languageTexts = {
         tabCountText: '현재 저장된 탭 수:',
         cancelBtn: '취소',
         confirmBtn: '삭제 확인',
-        deleteSuccess: '닫힌 탭 기록이 성공적으로 삭제되었습니다'
+        deleteSuccess: '닫힌 탭 기록이 성공적으로 삭제되었습니다',
+        shortcutLabel: '단축키: 가장 최근에 닫은 탭 열기',
+        shortcutHelp: '기본값: Windows/Linux는 Ctrl+Shift+Z, Mac은 Cmd+Shift+Z. 아래 버튼을 눌러 브라우저 확장 단축키 설정 페이지로 이동하여 변경하세요.',
+        shortcutSupportNote: '이 기능은 모든 브라우저에서 지원되지 않을 수 있습니다.',
+        openShortcutSettingsBtn: '브라우저 단축키 설정 열기',
+        resetShortcutBtn: '기본값으로 재설정',
+        shortcutResetInfo: '“확장 프로그램 단축키” 페이지에서 기본값으로 재설정하거나 원하는 키 조합으로 설정하세요.'
     },
     fr: {
         title: 'Options de l\'extension',
@@ -143,6 +171,7 @@ const languageTexts = {
         popupWidthLabel: 'Largeur de la fenêtre:',
         popupWidthHelp: 'Définir la largeur de la fenêtre contextuelle (300-800 pixels)',
         showTabCountLabel: 'Afficher le nombre d\'onglets:',
+        showUrlLabel: 'Afficher l\'URL:',
         clearModeLabel: 'Mode de nettoyage des onglets:',
         clearModeNone: 'Ne rien faire',
         clearModeIncognito: 'Effacer les onglets privés uniquement',
@@ -162,7 +191,13 @@ const languageTexts = {
         tabCountText: 'Nombre d\'onglets actuellement sauvegardés:',
         cancelBtn: 'Annuler',
         confirmBtn: 'Confirmer la suppression',
-        deleteSuccess: 'Tous les enregistrements d\'onglets fermés ont été supprimés avec succès'
+        deleteSuccess: 'Tous les enregistrements d\'onglets fermés ont été supprimés avec succès',
+        shortcutLabel: 'Raccourci : Ouvrir le dernier onglet fermé',
+        shortcutHelp: 'Par défaut : Ctrl+Maj+Z sur Windows/Linux, Cmd+Maj+Z sur Mac. Cliquez ci-dessous pour ouvrir la page des raccourcis des extensions du navigateur afin de le modifier.',
+        shortcutSupportNote: 'Veuillez noter que cette fonctionnalité peut ne pas être prise en charge par tous les navigateurs.',
+        openShortcutSettingsBtn: 'Ouvrir les raccourcis du navigateur',
+        resetShortcutBtn: 'Réinitialiser par défaut',
+        shortcutResetInfo: 'Utilisez la page « Raccourcis des extensions » pour réinitialiser par défaut ou définir votre combinaison préférée.'
     },
     de: {
         title: 'Erweiterungsoptionen',
@@ -176,6 +211,7 @@ const languageTexts = {
         popupWidthLabel: 'Popup-Breite:',
         popupWidthHelp: 'Breite des Popup-Fensters festlegen (300-800 Pixel)',
         showTabCountLabel: 'Tab-Anzahl anzeigen:',
+        showUrlLabel: 'URL anzeigen:',
         clearModeLabel: 'Tab-Löschmodus:',
         clearModeNone: 'Nichts tun',
         clearModeIncognito: 'Nur Inkognito-Tabs löschen',
@@ -195,7 +231,13 @@ const languageTexts = {
         tabCountText: 'Anzahl aktuell gespeicherter Tabs:',
         cancelBtn: 'Abbrechen',
         confirmBtn: 'Löschen bestätigen',
-        deleteSuccess: 'Alle Aufzeichnungen geschlossener Tabs wurden erfolgreich gelöscht'
+        deleteSuccess: 'Alle Aufzeichnungen geschlossener Tabs wurden erfolgreich gelöscht',
+        shortcutLabel: 'Tastenkürzel: Zuletzt geschlossenen Tab öffnen',
+        shortcutHelp: 'Standard: Strg+Umschalt+Z unter Windows/Linux, Cmd+Umschalt+Z auf dem Mac. Klicken Sie unten, um die Browserseite für Erweiterungs-Tastenkürzel zu öffnen und dies zu ändern.',
+        shortcutSupportNote: 'Bitte beachten Sie, dass diese Funktion möglicherweise nicht von allen Browsern unterstützt wird.',
+        openShortcutSettingsBtn: 'Browser-Tastenkürzel öffnen',
+        resetShortcutBtn: 'Auf Standard zurücksetzen',
+        shortcutResetInfo: 'Verwenden Sie die Seite „Erweiterungs-Tastenkürzel“, um auf Standard zurückzusetzen oder Ihre bevorzugte Tastenfolge festzulegen.'
     },
     es: {
         title: 'Opciones de la extensión',
@@ -209,6 +251,7 @@ const languageTexts = {
         popupWidthLabel: 'Ancho de la ventana emergente:',
         popupWidthHelp: 'Establecer el ancho de la ventana emergente (300-800 píxeles)',
         showTabCountLabel: 'Mostrar número de pestañas:',
+        showUrlLabel: 'Mostrar URL:',
         clearModeLabel: 'Modo de limpieza de pestañas:',
         clearModeNone: 'No hacer nada',
         clearModeIncognito: 'Limpiar solo pestañas de incógnito',
@@ -228,9 +271,53 @@ const languageTexts = {
         tabCountText: 'Número de pestañas actualmente guardadas:',
         cancelBtn: 'Cancelar',
         confirmBtn: 'Confirmar eliminación',
-        deleteSuccess: 'Se eliminaron exitosamente todos los registros de pestañas cerradas'
+        deleteSuccess: 'Se eliminaron exitosamente todos los registros de pestañas cerradas',
+        shortcutLabel: 'Atajo: Abrir la pestaña cerrada más reciente',
+        shortcutHelp: 'Por defecto: Ctrl+Shift+Z en Windows/Linux, Cmd+Shift+Z en Mac. Haga clic abajo para abrir la página de atajos de extensiones del navegador y cambiarlo.',
+        shortcutSupportNote: 'Tenga en cuenta que esta función puede no ser compatible con todos los navegadores.',
+        openShortcutSettingsBtn: 'Abrir configuración de atajos del navegador',
+        resetShortcutBtn: 'Restablecer a predeterminado',
+        shortcutResetInfo: 'Use la página «Atajos de extensiones» para restablecer a predeterminado o definir su combinación preferida.'
     }
 };
+
+// 在非扩展预览环境提供轻量级 chrome API mock，避免访问报错
+(() => {
+    const needMock = typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync;
+    if (needMock) {
+        const store = {};
+        const storageSync = {
+            async get(keys) {
+                if (!keys) return { ...store };
+                if (Array.isArray(keys)) {
+                    const result = {};
+                    keys.forEach(k => { result[k] = store[k]; });
+                    return result;
+                }
+                if (typeof keys === 'string') {
+                    return { [keys]: store[keys] };
+                }
+                if (typeof keys === 'object') {
+                    const result = {};
+                    Object.keys(keys).forEach(k => { result[k] = store[k] ?? keys[k]; });
+                    return result;
+                }
+                return { ...store };
+            },
+            async set(obj) {
+                Object.assign(store, obj);
+            }
+        };
+        const storageOnChanged = { addListener() { /* noop in preview */ } };
+
+        window.chrome = window.chrome || {};
+        chrome.storage = chrome.storage || {};
+        chrome.storage.sync = storageSync;
+        chrome.storage.onChanged = storageOnChanged;
+        chrome.tabs = chrome.tabs || { create({ url }) { console.log('[Preview] open tab:', url); } };
+        chrome.commands = chrome.commands || { getAll(cb) { cb([]); } };
+    }
+})();
 
 function updateLanguageTexts(language) {
     const texts = languageTexts[language];
@@ -244,15 +331,22 @@ function updateLanguageTexts(language) {
     document.querySelector('option[value="dark"]').textContent = texts.themeDark;
     document.querySelector('label[for="languageSelect"]').textContent = texts.languageLabel;
     document.querySelector('label[for="maxRecent"]').textContent = texts.maxRecentLabel;
-    document.querySelectorAll('.help-text')[0].textContent = texts.maxRecentHelp;
+    const maxRecentHelpEl = document.getElementById('maxRecentHelpText') || document.querySelectorAll('.help-text')[0];
+    if (maxRecentHelpEl) maxRecentHelpEl.textContent = texts.maxRecentHelp;
     document.querySelector('label[for="popupWidth"]').textContent = texts.popupWidthLabel;
-    document.querySelectorAll('.help-text')[1].textContent = texts.popupWidthHelp;
+    const popupWidthHelpEl = document.getElementById('popupWidthHelpText') || document.querySelectorAll('.help-text')[1];
+    if (popupWidthHelpEl) popupWidthHelpEl.textContent = texts.popupWidthHelp;
     document.querySelector('label[for="showTabCount"]').textContent = texts.showTabCountLabel;
+    const showUrlLabelEl = document.querySelector('label[for="showUrl"]');
+    if (showUrlLabelEl) {
+        showUrlLabelEl.textContent = texts.showUrlLabel;
+    }
     document.querySelector('#clearModeLabel').textContent = texts.clearModeLabel;
     document.querySelector('#clearModeNoneLabel').textContent = texts.clearModeNone;
     document.querySelector('#clearModeIncognitoLabel').textContent = texts.clearModeIncognito;
     document.querySelector('#clearModeAllLabel').textContent = texts.clearModeAll;
-    document.querySelectorAll('.help-text')[2].textContent = texts.clearModeHelp;
+    const clearModeHelpEl = document.getElementById('clearModeHelpText') || document.querySelectorAll('.help-text')[2];
+    if (clearModeHelpEl) clearModeHelpEl.textContent = texts.clearModeHelp;
     document.querySelector('label[for="navigationPosition"]').textContent = texts.navigationPositionLabel;
     document.querySelector('option[value="top"]').textContent = texts.navigationPositionTop;
     document.querySelector('option[value="bottom"]').textContent = texts.navigationPositionBottom;
@@ -261,7 +355,20 @@ function updateLanguageTexts(language) {
     document.querySelector('option[value="infinite"]').textContent = texts.pageModeInfinite;
     document.querySelector('#dataManagementLabel').textContent = texts.dataManagementLabel;
     document.querySelector('#clearClosedTabsBtn').textContent = texts.clearClosedTabsBtn;
-    document.querySelectorAll('.help-text')[3].textContent = texts.clearClosedTabsHelp;
+    const dataManagementHelpEl = document.getElementById('dataManagementHelpText') || document.querySelectorAll('.help-text')[3];
+    if (dataManagementHelpEl) dataManagementHelpEl.textContent = texts.clearClosedTabsHelp;
+
+    // 快捷键相关文案绑定（存在则更新）
+    const shortcutLabelEl = document.querySelector('label[for="shortcutOpenRecent"]');
+    if (shortcutLabelEl && texts.shortcutLabel) shortcutLabelEl.textContent = texts.shortcutLabel;
+    const shortcutHelpEl = document.getElementById('shortcutHelpText');
+    if (shortcutHelpEl && texts.shortcutHelp) shortcutHelpEl.textContent = texts.shortcutHelp;
+    const shortcutSupportNoteEl = document.getElementById('shortcutSupportNote');
+    if (shortcutSupportNoteEl && texts.shortcutSupportNote) shortcutSupportNoteEl.textContent = texts.shortcutSupportNote;
+    const openShortcutSettingsBtn = document.getElementById('openShortcutSettingsBtn');
+    if (openShortcutSettingsBtn && texts.openShortcutSettingsBtn) openShortcutSettingsBtn.textContent = texts.openShortcutSettingsBtn;
+    const resetShortcutBtn = document.getElementById('resetShortcutBtn');
+    if (resetShortcutBtn && texts.resetShortcutBtn) resetShortcutBtn.textContent = texts.resetShortcutBtn;
     
     // 更新模态框文本
     document.getElementById('modalTitle').textContent = texts.confirmDeleteTitle;
@@ -301,12 +408,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const popupWidthTooltip = document.getElementById('popupWidthTooltip');
     const languageSelect = document.getElementById('languageSelect');
     const showTabCountCheckbox = document.getElementById('showTabCount');
+    const showUrlCheckbox = document.getElementById('showUrl');
     const clearModeRadios = document.querySelectorAll('input[name="clearMode"]');
     const navigationPositionSelect = document.getElementById('navigationPosition');
     const pageModeSelect = document.getElementById('pageMode');
     
     // 获取保存的设置
-    const savedSettings = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language', 'showTabCount', 'clearMode', 'navigationPosition', 'pageMode']);
+    const savedSettings = await chrome.storage.sync.get(['theme', 'maxRecent', 'popupWidth', 'language', 'showTabCount', 'showUrl', 'clearMode', 'navigationPosition', 'pageMode']);
     
     // 设置默认值，只有当存储中没有值时才使用默认值
     const savedTheme = savedSettings.theme !== undefined ? savedSettings.theme : 'system';
@@ -314,6 +422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const popupWidth = savedSettings.popupWidth !== undefined ? savedSettings.popupWidth : 500;
     const savedLanguage = savedSettings.language !== undefined ? savedSettings.language : 'zh';
     const showTabCount = savedSettings.showTabCount !== undefined ? savedSettings.showTabCount : true;
+    const showUrl = savedSettings.showUrl !== undefined ? savedSettings.showUrl : true;
     const clearMode = savedSettings.clearMode !== undefined ? savedSettings.clearMode : 'none';
     const navigationPosition = savedSettings.navigationPosition !== undefined ? savedSettings.navigationPosition : 'top';
     const pageMode = savedSettings.pageMode !== undefined ? savedSettings.pageMode : 'pagination';
@@ -343,6 +452,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 设置显示标签页数量的值
     showTabCountCheckbox.checked = showTabCount;
 
+    // 设置显示URL的值
+    if (showUrlCheckbox) {
+        showUrlCheckbox.checked = showUrl;
+    }
+
     // 设置清理模式的值
     clearModeRadios.forEach(radio => {
         if (radio.value === clearMode) {
@@ -353,6 +467,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 设置导航位置和页面模式的值
     navigationPositionSelect.value = navigationPosition;
     pageModeSelect.value = pageMode;
+
+    // 快捷键显示与操作
+    const shortcutInput = document.getElementById('shortcutOpenRecent');
+    const shortcutOpenBtn = document.getElementById('openShortcutSettingsBtn');
+    const shortcutResetBtn = document.getElementById('resetShortcutBtn');
+    const isChromeEnv = typeof chrome !== 'undefined' && !!chrome.commands;
+    const defaultShortcut = /Mac/i.test(navigator.platform) ? 'Cmd+Shift+Z' : 'Ctrl+Shift+Z';
+
+    if (shortcutInput) {
+        shortcutInput.readOnly = true;
+        shortcutInput.placeholder = defaultShortcut;
+        if (isChromeEnv && chrome.commands && typeof chrome.commands.getAll === 'function') {
+            chrome.commands.getAll((commands) => {
+                try {
+                    const cmd = commands && commands.find(c => c.name === 'open-most-recently-closed-tab');
+                    if (cmd && cmd.shortcut) {
+                        shortcutInput.value = cmd.shortcut;
+                    } else {
+                        shortcutInput.value = defaultShortcut;
+                    }
+                } catch (e) {
+                    shortcutInput.value = defaultShortcut;
+                }
+            });
+        } else {
+            shortcutInput.value = defaultShortcut;
+        }
+    }
+
+    if (shortcutOpenBtn) {
+        shortcutOpenBtn.addEventListener('click', () => {
+            if (isChromeEnv && chrome.tabs && typeof chrome.tabs.create === 'function') {
+                chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+            } else {
+                alert('请在浏览器地址栏输入 chrome://extensions/shortcuts 以打开扩展快捷键设置页面。');
+            }
+        });
+    }
+
+    if (shortcutResetBtn) {
+        shortcutResetBtn.addEventListener('click', async () => {
+            if (isChromeEnv && chrome.tabs && typeof chrome.tabs.create === 'function') {
+                chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+            }
+            // 获取当前语言以显示提示
+            let currentLanguage = 'zh';
+            try {
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && typeof chrome.storage.sync.get === 'function') {
+                    const res = await chrome.storage.sync.get('language');
+                    currentLanguage = res.language || 'zh';
+                }
+            } catch (e) {}
+            const texts = languageTexts[currentLanguage] || languageTexts.zh;
+            const msg = texts.shortcutResetInfo || 'Please use the browser extension shortcuts page to reset to default or set your preferred keys.';
+            alert(msg);
+        });
+    }
 
     // 更新滑块渐变效果的函数
     function updateSliderBackground(slider, value) {
@@ -492,6 +663,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         await chrome.storage.sync.set({ showTabCount: showTabCountCheckbox.checked });
     });
 
+    // 显示URL选择事件监听
+    if (showUrlCheckbox) {
+        showUrlCheckbox.addEventListener('change', async () => {
+            await chrome.storage.sync.set({ showUrl: showUrlCheckbox.checked });
+        });
+    }
+
     // 清理模式选择事件监听
     clearModeRadios.forEach(radio => {
         radio.addEventListener('change', async () => {
@@ -537,6 +715,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (namespace === 'sync' && changes.showTabCount) {
             showTabCountCheckbox.checked = changes.showTabCount.newValue;
+        }
+        if (namespace === 'sync' && changes.showUrl && showUrlCheckbox) {
+            showUrlCheckbox.checked = changes.showUrl.newValue;
         }
         if (namespace === 'sync' && changes.navigationPosition) {
             const newNavigationPosition = changes.navigationPosition.newValue;

@@ -483,7 +483,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true; // Indicates that the response is sent asynchronously
     }
     
-    // 可以添加其他消息类型处理，例如 favicon
+// 可以添加其他消息类型处理，例如 favicon
+});
+
+// 监听快捷键命令：前台打开最近一个关闭的标签页
+chrome.commands.onCommand.addListener(async (command) => {
+    if (command !== 'open-most-recently-closed-tab') return;
+
+    try {
+        const [{ closedTabs = [], incognitoClosedTabs = [] }, lastFocusedWindow] = await Promise.all([
+            chrome.storage.local.get(['closedTabs', 'incognitoClosedTabs']),
+            chrome.windows.getLastFocused({ populate: false }).catch(() => null)
+        ]);
+
+        const useIncognito = !!(lastFocusedWindow && lastFocusedWindow.incognito);
+        let candidate = null;
+
+        if (useIncognito && incognitoClosedTabs.length > 0) {
+            candidate = incognitoClosedTabs[0];
+        } else if (closedTabs.length > 0) {
+            candidate = closedTabs[0];
+        } else if (incognitoClosedTabs.length > 0) {
+            candidate = incognitoClosedTabs[0];
+        }
+
+        if (!candidate || !candidate.url) {
+            console.log('No recently closed tab to open');
+            return;
+        }
+
+        const createProps = { url: candidate.url, active: true };
+        if (lastFocusedWindow && typeof lastFocusedWindow.id === 'number') {
+            createProps.windowId = lastFocusedWindow.id;
+        }
+
+        await chrome.tabs.create(createProps);
+    } catch (error) {
+        console.error('Error handling open-most-recently-closed-tab command:', error);
+    }
 });
 
 // 导出一些工具函数供其他模块使用

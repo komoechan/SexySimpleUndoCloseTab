@@ -278,7 +278,7 @@ body {
 .history-link {
     cursor: pointer;
     color: var(--text-color); /* 添加文本颜色变量 */
-    max-width: calc(100% - 140px); /* 固定预留时间戳区域的空间 */
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -319,15 +319,15 @@ body {
     top: 0;
     bottom: 0;
     width: 24px; /* Default width to show the × symbol */
-    background: #dc3545;
-    color: white;
+    background: transparent;
+    color: #999;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 14px;
     transition: width 0.2s;
-    z-index: 1;
+    z-index: 2;
     padding: 0 8px; /* Add padding for better touch targets */
     opacity: 0;
     transition: opacity 0.2s;
@@ -338,7 +338,7 @@ body {
 }
 
 .delete-button:hover {
-    background: #c82333;
+    color: #666;
 }
 
 /* 复制按钮样式 */
@@ -366,11 +366,16 @@ body {
 .copy-button .material-icons {
     font-size: 16px; /* 图标略小，更协调 */
     line-height: 1;
-    color: #999;
+    color: inherit; /* 跟随父元素颜色，确保 hover 时同步变化 */
 }
 
 .copy-button:hover {
     color: #666;
+}
+
+/* 当 hover 到条目时隐藏时间显示，减少视觉干扰 */
+.history-item:hover .visit-time {
+    visibility: hidden;
 }
 
 /* Add restore button styles */
@@ -576,4 +581,28 @@ body {
 .history-link:visited {
     color: var(--text-color);
     opacity: 0.8;
+}
+.text-container {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    gap: 2px;
+}
+
+.url-text {
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 让时间与操作按钮在双行布局中垂直居中 */
+.visit-time,
+.delete-button,
+.copy-button {
+    align-self: center;
 }

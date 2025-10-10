@@ -39,7 +39,7 @@
                     <div class="slider-tooltip" id="maxRecentTooltip"></div>
                     <input type="number" id="maxRecent" class="number-input" placeholder="输入数值">
                 </div>
-                <p class="help-text">设置最近关闭标签页的最大记录数量 (1-20000)</p>
+                <p class="help-text" id="maxRecentHelpText">设置最近关闭标签页的最大记录数量 (1-20000)</p>
             </div>
         </div>
         <div class="option-group">
@@ -50,10 +50,10 @@
                     <div class="slider-tooltip" id="popupWidthTooltip"></div>
                     <input type="number" id="popupWidth" class="number-input" placeholder="输入数值">
                 </div>
-                <p class="help-text">设置弹出窗口的宽度 (300-800像素)</p>
+                <p class="help-text" id="popupWidthHelpText">设置弹出窗口的宽度 (300-800像素)</p>
             </div>
         </div>
-        <div class="option-group">
+        <div class="option-group single-inline">
             <label for="showTabCount">显示标签页数量:</label>
             <input type="checkbox" id="showTabCount">
         </div>
@@ -81,7 +81,7 @@
                     </label>
                 </div>
             </div>
-            <p class="help-text">选择当关闭无痕窗口或退出浏览器时的处理方式</p>
+            <p class="help-text" id="clearModeHelpText">选择当关闭无痕窗口或退出浏览器时的处理方式</p>
         </div>
         <div class="option-group">
             <label for="navigationPosition">导航位置:</label>
@@ -97,11 +97,30 @@
                 <option value="infinite">瀑布流</option>
             </select>
         </div>
+        <!-- 快捷键设置 -->
+        <div class="option-group">
+            <label for="shortcutOpenRecent">快捷键: 打开最近关闭的标签页</label>
+            <div class="shortcut-setting">
+                <input type="text" id="shortcutOpenRecent" class="shortcut-input" readonly placeholder="按下组合键进行设置" />
+                <button id="openShortcutSettingsBtn" class="secondary-button">打开浏览器快捷键设置</button>
+                <button id="resetShortcutBtn" class="secondary-button">重置为默认</button>
+                <p class="help-text" id="shortcutHelpText">默认: Windows/Linux 为 Ctrl+Shift+Z，Mac 为 Cmd+Shift+Z。您可以点击上方按钮打开浏览器的扩展快捷键设置进行更改。</p>
+                <p class="help-text" id="shortcutSupportNote">请注意该功能不一定支持所有的浏览器。</p>
+            </div>
+        </div>
+        
+        <!-- 显示对应URL选项 -->
+        <div class="option-group single-inline">
+            <label for="showUrl">显示对应URL:</label>
+            <input type="checkbox" id="showUrl" />
+        </div>
+
+        <!-- 数据管理 放到最后 -->
         <div class="option-group">
             <label id="dataManagementLabel">数据管理:</label>
             <div class="data-management">
                 <button id="clearClosedTabsBtn" class="danger-button">清除所有关闭标签页</button>
-                <p class="help-text">此操作将删除所有保存的关闭标签页记录，不影响浏览器历史记录。</p>
+                <p class="help-text" id="dataManagementHelpText">此操作将删除所有保存的关闭标签页记录，不影响浏览器历史记录。</p>
             </div>
         </div>
     </div>

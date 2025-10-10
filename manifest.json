@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.6",
+  "version": "1.7",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
@@ -32,5 +32,16 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "commands": {
+    "open-most-recently-closed-tab": {
+      "description": "Open most recently closed tab",
+      "suggested_key": {
+        "default": "Ctrl+Shift+Z",
+        "mac": "Command+Shift+Z",
+        "windows": "Ctrl+Shift+Z",
+        "linux": "Ctrl+Shift+Z"
+      }
+    }
   }
 }
