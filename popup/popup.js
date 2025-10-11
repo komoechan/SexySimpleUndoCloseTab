@@ -100,6 +100,7 @@ let currentClosedTabs = [];
 let tabButtons; // 添加全局变量
 const itemsPerPage = 20;
 let isInfiniteScrollMode = false; // 添加一个标志来追踪当前是否为瀑布流模式
+let closedTabsTotalCount = 0; // 跟踪最近关闭标签的总数用于无限滚动守护
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 非扩展环境安全回退：当 chrome API 不可用时，提供空对象和简易实现
@@ -304,15 +305,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 封装加载更多逻辑
             const loadMoreItems = (elem) => {
                 elem.dataset.isLoading = 'true';
-                
+
                 setTimeout(() => {
-                    currentPage++;
-                    if (elem.id === 'historyList' && 
-                        document.querySelector('.tab-button.active').dataset.tab === 'history') {
-                        loadHistoryItems(true); // 传入true表示追加加载
-                    } else if (elem.id === 'closedTabsList' && 
-                               document.querySelector('.tab-button.active').dataset.tab === 'closed-tabs') {
-                        loadClosedTabs(true); // 传入true表示追加加载
+                    const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+                    if (elem.id === 'historyList' && activeTab === 'history') {
+                        const totalPages = Math.max(1, Math.ceil(Math.max(currentHistoryItems.length, 1) / itemsPerPage));
+                        if (currentPage >= totalPages) {
+                            // 已经是最后一页，停止递增并移除加载指示器
+                            const indicator = elem.querySelector('#loadingIndicator');
+                            if (indicator) indicator.remove();
+                            elem.dataset.isLoading = 'false';
+                            return;
+                        }
+                        currentPage++;
+                        loadHistoryItems(true);
+                    } else if (elem.id === 'closedTabsList' && activeTab === 'closed-tabs') {
+                        const totalPages = Math.max(1, Math.ceil(Math.max(closedTabsTotalCount || 0, 1) / itemsPerPage));
+                        if (currentPage >= totalPages) {
+                            // 已经是最后一页，停止递增并移除加载指示器
+                            const indicator = elem.querySelector('#loadingIndicator');
+                            if (indicator) indicator.remove();
+                            elem.dataset.isLoading = 'false';
+                            return;
+                        }
+                        currentPage++;
+                        loadClosedTabs(true);
                     }
                     // 重置加载状态
                     setTimeout(() => {
@@ -655,11 +672,26 @@ function createLoadingIndicator() {
         const parentElement = loadingIndicator.parentElement;
         if (parentElement && (!parentElement.dataset.isLoading || parentElement.dataset.isLoading === 'false')) {
             parentElement.dataset.isLoading = 'true';
-            currentPage++;
-            
-            if (parentElement.id === 'historyList') {
+            const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+            if (parentElement.id === 'historyList' && activeTab === 'history') {
+                const totalPages = Math.max(1, Math.ceil(Math.max(currentHistoryItems.length, 1) / itemsPerPage));
+                if (currentPage >= totalPages) {
+                    const indicator = parentElement.querySelector('#loadingIndicator');
+                    if (indicator) indicator.remove();
+                    parentElement.dataset.isLoading = 'false';
+                    return;
+                }
+                currentPage++;
                 loadHistoryItems(true);
-            } else if (parentElement.id === 'closedTabsList') {
+            } else if (parentElement.id === 'closedTabsList' && activeTab === 'closed-tabs') {
+                const totalPages = Math.max(1, Math.ceil(Math.max(closedTabsTotalCount || 0, 1) / itemsPerPage));
+                if (currentPage >= totalPages) {
+                    const indicator = parentElement.querySelector('#loadingIndicator');
+                    if (indicator) indicator.remove();
+                    parentElement.dataset.isLoading = 'false';
+                    return;
+                }
+                currentPage++;
                 loadClosedTabs(true);
             }
             
@@ -905,13 +937,21 @@ function loadClosedTabs(append = false) {
                 updateTabCounts(0, 'closed-tabs');
                 return;
             }
+            // 更新总数用于无限滚动守护
+            closedTabsTotalCount = response.totalCount || 0;
             
             // 如果当前页超过总页数，进行页码钳制并重新加载，以避免页面清空
             try {
                 const totalPages = response.totalCount > 0 ? Math.ceil(response.totalCount / itemsPerPage) : 1;
                 if (currentPage > totalPages) {
                     currentPage = totalPages;
-                    // 重新加载并退出当前回调，避免显示空列表
+                    // 在瀑布流模式下，不清空列表，仅更新分页与计数并返回
+                    if (isInfiniteScrollMode) {
+                        updateGlobalPagination(response.totalCount);
+                        updateTabCounts(response.totalCount, 'closed-tabs');
+                        return;
+                    }
+                    // 非瀑布流模式，保持原逻辑重新加载
                     loadClosedTabs(false);
                     return;
                 }
@@ -922,12 +962,16 @@ function loadClosedTabs(append = false) {
             // currentClosedTabs = response.tabs; // currentClosedTabs现在只代表当前页的项目，这会影响瀑布流的长度判断
                                          // 因此，瀑布流的长度判断需要依赖 totalCount
 
-            if (!isInfiniteScrollMode || !append) {
-                // 正常分页加载或瀑布流首次加载
-                displayClosedTabs(response.tabs || []);
+            if (isInfiniteScrollMode) {
+                // 瀑布流模式：首次加载（currentPage===1且非追加）使用显示，其余情况使用追加，避免清空已加载内容
+                if (append || currentPage > 1) {
+                    appendClosedTabs(response.tabs || []);
+                } else {
+                    displayClosedTabs(response.tabs || []);
+                }
             } else {
-                // 瀑布流模式下追加显示项目
-                appendClosedTabs(response.tabs || []);
+                // 非瀑布流模式：始终使用显示逻辑
+                displayClosedTabs(response.tabs || []);
             }
             
             updateGlobalPagination(response.totalCount);
@@ -1159,7 +1203,10 @@ function appendClosedTabs(newItems) {
 
 function displayClosedTabs(pageItems) {
     const closedTabsList = domCache.closedTabsList;
-    closedTabsList.innerHTML = '';
+    // 在瀑布流模式下仅在第一页时清空，避免后续刷新清空已加载内容
+    if (!isInfiniteScrollMode || currentPage === 1) {
+        closedTabsList.innerHTML = '';
+    }
     const searchQuery = domCache.globalSearch.value.trim();
     const keywords = searchQuery ? searchQuery.split(/\s+/).filter(Boolean) : [];
     
